@@ -1,0 +1,533 @@
+{
+  "name": "Phase4_승인_자동반영",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ad-approve",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ],
+      "id": "wh-001",
+      "name": "승인_Webhook",
+      "webhookId": "ad-approve"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Webhook 파라미터 검증\nconst query = $input.first().json.query || {};\nconst action = query.action || '';         // 'bid_up', 'bid_down', 'hold'\nconst productId = query.product_id || '';  // nad- ID\nconst productName = query.product_name || '';\nconst changePercent = parseFloat(query.percent) || 0;\nconst token = query.token || '';\nconst timestamp = query.ts || '';\n\n// 토큰 검증 (간단 해시)\nconst crypto = require('crypto');\nconst expectedToken = crypto.createHash('md5')\n  .update(productId + timestamp + 'hanasign_secret')\n  .digest('hex').substring(0, 12);\n\nif (token !== expectedToken) {\n  return [{ json: { error: true, message: '유효하지 않은 승인 링크입니다.', action: 'reject' } }];\n}\n\n// 규칙 검증\nif (Math.abs(changePercent) > 30) {\n  return [{ json: { error: true, message: '입찰가 변경폭 ±30% 초과. 규칙 위반.', action: 'reject' } }];\n}\n\nif (action === 'hold') {\n  return [{ json: { error: false, action: 'hold', productId, productName, message: '보류 처리되었습니다.' } }];\n}\n\nreturn [{ json: {\n  error: false,\n  action: action,\n  productId: productId,\n  productName: productName,\n  changePercent: changePercent,\n  timestamp: timestamp,\n  message: ''\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ],
+      "id": "wh-002",
+      "name": "파라미터_검증"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond-2",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "hold",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ],
+      "id": "wh-003",
+      "name": "실행_분기"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "v1",
+              "name": "naver_api_key",
+              "value": "0100000000cefe209bc80fe953e12036d0466ecda8a21d1715d58a8c6ac95db996bb7e72d6",
+              "type": "string"
+            },
+            {
+              "id": "v2",
+              "name": "naver_secret_key",
+              "value": "AQAAAADO/iCbyA/pU+EgNtBGbs2oqaWaJ+6OHtf3iheJkEGMjg==",
+              "type": "string"
+            },
+            {
+              "id": "v3",
+              "name": "naver_customer_id",
+              "value": "1728536",
+              "type": "string"
+            },
+            {
+              "id": "v4",
+              "name": "google_sheet_id",
+              "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+              "type": "string"
+            },
+            {
+              "id": "v5",
+              "name": "alert_email",
+              "value": "jimrn22@gmail.com",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        200
+      ],
+      "id": "wh-004",
+      "name": "변수_설정_P4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst prevData = $('파라미터_검증').first().json;\nconst setNode = $('변수_설정_P4');\nconst apiKey = setNode.first().json.naver_api_key;\nconst secretKey = setNode.first().json.naver_secret_key;\nconst customerId = setNode.first().json.naver_customer_id;\n\n// 쇼핑검색광고 소재별 입찰가 변경: PUT /ncc/ads/{nccAdId}\nconst adId = prevData.productId;\nconst timestamp = Date.now().toString();\nconst method = 'PUT';\nconst uri = '/ncc/ads/' + adId;\n\nconst message = timestamp + '.' + method + '.' + uri;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\nreturn [{ json: {\n  timestamp, signature, api_key: apiKey, customer_id: customerId,\n  adId, uri,\n  action: prevData.action,\n  changePercent: prevData.changePercent,\n  productName: prevData.productName,\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        200
+      ],
+      "id": "wh-005",
+      "name": "서명_생성_입찰변경"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst prev = $('서명_생성_입찰변경').first().json;\nconst setNode = $('변수_설정_P4');\nconst secretKey = setNode.first().json.naver_secret_key;\n\n// GET으로 현재 광고그룹 정보 조회\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = '/ncc/ads/' + prev.adId;\nconst message = timestamp + '.' + method + '.' + uri;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\nreturn [{ json: {\n  ...prev,\n  get_timestamp: timestamp,\n  get_signature: signature,\n  get_uri: 'https://api.searchad.naver.com' + uri,\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        200
+      ],
+      "id": "wh-006",
+      "name": "현재입찰가_조회준비"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.get_uri }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.get_timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.get_signature }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1780,
+        200
+      ],
+      "id": "wh-007",
+      "name": "HTTP_현재입찰가"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst adObject = $input.first().json;\nconst prev = $('서명_생성_입찰변경').first().json;\nconst setNode = $('변수_설정_P4');\nconst secretKey = setNode.first().json.naver_secret_key;\n\nconst currentBid = (adObject.adAttr && adObject.adAttr.bidAmt) || 0;\nconst adType = adObject.type || 'SHOPPING_PRODUCT_AD';\nconst changePercent = prev.changePercent;\nconst rawNewBid = currentBid * (1 + changePercent / 100);\nconst newBid = Math.max(70, Math.round(rawNewBid / 10) * 10);\n\n// PUT 서명\nconst timestamp = Date.now().toString();\nconst method = 'PUT';\nconst uri = '/ncc/ads/' + prev.adId;\nconst message = timestamp + '.' + method + '.' + uri;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\nreturn [{ json: {\n  adId: prev.adId,\n  adType: adType,\n  productName: prev.productName,\n  action: prev.action,\n  currentBid: currentBid,\n  newBid: newBid,\n  changePercent: changePercent,\n  put_timestamp: timestamp,\n  put_signature: signature,\n  api_key: prev.api_key,\n  customer_id: prev.customer_id,\n  put_url: 'https://api.searchad.naver.com' + uri + '?fields=adAttr',\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        200
+      ],
+      "id": "wh-008",
+      "name": "새입찰가_계산"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.put_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.put_timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.put_signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \"nccAdId\": $json.adId, \"type\": $json.adType, \"adAttr\": { \"bidAmt\": $json.newBid, \"useGroupBidAmt\": false } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2220,
+        200
+      ],
+      "id": "wh-009",
+      "name": "HTTP_입찰가변경"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "05_실행로그",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2440,
+        200
+      ],
+      "id": "wh-010",
+      "name": "실행로그_기록"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('새입찰가_계산').first().json;\nconst html = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\">\n<style>body{font-family:'Noto Sans KR',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f9ff;margin:0}\n.card{background:#fff;border-radius:16px;padding:40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:400px}\nh2{color:#166534;margin-bottom:8px} p{color:#64748b;font-size:14px;line-height:1.6}</style></head>\n<body><div class=\"card\">\n<div style=\"font-size:48px;margin-bottom:12px\">✅</div>\n<h2>입찰가 변경 완료</h2>\n<p><strong>${data.productName}</strong></p>\n<p>${data.currentBid}원 → <strong>${data.newBid}원</strong> (${data.changePercent > 0 ? '+' : ''}${data.changePercent}%)</p>\n<p style=\"color:#94a3b8;font-size:12px;margin-top:16px\">하나사인몰 AI 광고 에이전트</p>\n</div></body></html>`;\n\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2660,
+        200
+      ],
+      "id": "wh-011",
+      "name": "응답_성공페이지"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2880,
+        200
+      ],
+      "id": "wh-012",
+      "name": "Webhook_응답_성공"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('파라미터_검증').first().json;\nconst isHold = data.action === 'hold';\nconst html = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\">\n<style>body{font-family:'Noto Sans KR',sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:${isHold?'#fffbeb':'#fef2f2'};margin:0}\n.card{background:#fff;border-radius:16px;padding:40px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:400px}\nh2{color:${isHold?'#92400e':'#991b1b'};margin-bottom:8px} p{color:#64748b;font-size:14px;line-height:1.6}</style></head>\n<body><div class=\"card\">\n<div style=\"font-size:48px;margin-bottom:12px\">${isHold?'⏸️':'❌'}</div>\n<h2>${isHold?'보류 처리됨':data.message||'처리 실패'}</h2>\n<p>${data.productName||''}</p>\n<p style=\"color:#94a3b8;font-size:12px;margin-top:16px\">하나사인몰 AI 광고 에이전트</p>\n</div></body></html>`;\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        420
+      ],
+      "id": "wh-013",
+      "name": "응답_거부페이지"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1340,
+        420
+      ],
+      "id": "wh-014",
+      "name": "Webhook_응답_거부"
+    },
+    {
+      "parameters": {
+        "content": "## Phase 4 — 승인 → 자동 반영\n\n**Webhook URL:** `{n8n_base_url}/webhook/ad-approve`\n\n**파라미터:**\n- `action`: bid_up / bid_down / hold\n- `product_id`: 광고그룹 ID\n- `product_name`: 상품명\n- `percent`: 변경폭 (%)\n- `token`: 보안 토큰 (MD5 해시)\n- `ts`: 타임스탬프\n\n**규칙:**\n- 변경폭 ±30% 초과 시 자동 거부\n- 최소 입찰가 70원\n- 토큰 불일치 시 거부",
+        "width": 360,
+        "height": 360,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        460,
+        520
+      ],
+      "id": "wh-sticky",
+      "name": "Sticky_Phase4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 시트 컬럼명과 동일하게 output 구성 (Map Automatically용)\nconst calc = $('새입찰가_계산').first().json;\nconst ts = new Date();\nconst yyyy = ts.getFullYear();\nconst mm = String(ts.getMonth() + 1).padStart(2, '0');\nconst dd = String(ts.getDate()).padStart(2, '0');\nconst hh = String(ts.getHours()).padStart(2, '0');\nconst mi = String(ts.getMinutes()).padStart(2, '0');\nconst ss = String(ts.getSeconds()).padStart(2, '0');\nconst execId = 'E' + yyyy + mm + dd + hh + mi + ss;\nconst execTime = yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + mi + ':' + ss;\n\nreturn [{ json: {\n  \"실행ID\": execId,\n  \"제안ID\": calc.adId,\n  \"실행일시\": execTime,\n  \"키워드\": calc.productName,\n  \"변경전\": calc.currentBid,\n  \"변경후\": calc.newBid,\n  \"실행결과\": \"성공\",\n  \"승인자\": \"이메일 승인\",\n  \"사후ROAS\": \"\",\n  \"효과\": \"\",\n  \"메모\": calc.action + ' ' + calc.changePercent + '%'\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        300
+      ],
+      "id": "wh-log-prep",
+      "name": "로그_데이터_준비"
+    }
+  ],
+  "connections": {
+    "승인_Webhook": {
+      "main": [
+        [
+          {
+            "node": "파라미터_검증",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "파라미터_검증": {
+      "main": [
+        [
+          {
+            "node": "실행_분기",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "실행_분기": {
+      "main": [
+        [
+          {
+            "node": "변수_설정_P4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "응답_거부페이지",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "변수_설정_P4": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_입찰변경",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_입찰변경": {
+      "main": [
+        [
+          {
+            "node": "현재입찰가_조회준비",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "현재입찰가_조회준비": {
+      "main": [
+        [
+          {
+            "node": "HTTP_현재입찰가",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP_현재입찰가": {
+      "main": [
+        [
+          {
+            "node": "새입찰가_계산",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "새입찰가_계산": {
+      "main": [
+        [
+          {
+            "node": "HTTP_입찰가변경",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP_입찰가변경": {
+      "main": [
+        [
+          {
+            "node": "로그_데이터_준비",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "실행로그_기록": {
+      "main": [
+        [
+          {
+            "node": "응답_성공페이지",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "응답_성공페이지": {
+      "main": [
+        [
+          {
+            "node": "Webhook_응답_성공",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "응답_거부페이지": {
+      "main": [
+        [
+          {
+            "node": "Webhook_응답_거부",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "로그_데이터_준비": {
+      "main": [
+        [
+          {
+            "node": "실행로그_기록",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
