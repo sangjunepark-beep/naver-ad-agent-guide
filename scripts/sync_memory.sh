@@ -54,6 +54,7 @@ FILES=(
   project_phase3_import_done.md
   project_phase4_done.md
   reference_n8n_workflows.md
+  project_home_pc_migration.md
 )
 
 CMD="${1:-}"
