@@ -1,0 +1,2260 @@
+{
+  "name": "네이버 검색광고 에이전트_파이프라인",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b3fa222-65c1-4e4d-aa9a-fd25aa4a4519",
+              "name": "naver_api_key",
+              "value": "0100000000cefe209bc80fe953e12036d0466ecda8a21d1715d58a8c6ac95db996bb7e72d6",
+              "type": "string"
+            },
+            {
+              "id": "bd0c5ab0-80d2-4c9c-bfea-e8361de237a6",
+              "name": "naver_secret_key",
+              "value": "AQAAAADO/iCbyA/pU+EgNtBGbs2oqaWaJ+6OHtf3iheJkEGMjg==",
+              "type": "string"
+            },
+            {
+              "id": "6fbc856a-4616-4ae6-bf2d-daa092981740",
+              "name": "naver_customer_id",
+              "value": "1728536",
+              "type": "string"
+            },
+            {
+              "id": "ea1b3f25-bc7b-47a2-9cfc-7c6eef630b63",
+              "name": "google_sheet_id",
+              "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+              "type": "string"
+            },
+            {
+              "id": "18e1eea2-c58d-4c6d-8616-d80b0282bc11",
+              "name": "alert_email",
+              "value": "jimrn22@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "75ab8ff0-24d2-4ec9-b997-ce4433fe8ce1",
+              "name": "bid_change_limit",
+              "value": "20",
+              "type": "string"
+            },
+            {
+              "id": "8e21e555-7ff7-4f6b-b475-fe2468c5b840",
+              "name": "anthropic_api_key",
+              "value": "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",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -200,
+        0
+      ],
+      "id": "821741e7-f279-4746-8b4a-9a610be2b351",
+      "name": "변수_설정"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// 변수_설정 노드에서 값 가져오기\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\n\n// HMAC-SHA256 서명 생성\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = '/ncc/campaigns';\n\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\n// 다음 노드로 전달할 데이터\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        200
+      ],
+      "id": "da72f7bb-bfbf-40b3-a203-dfe77072afd1",
+      "name": "서명_생성"
+    },
+    {
+      "parameters": {
+        "url": "https://api.searchad.naver.com/ncc/campaigns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        300,
+        200
+      ],
+      "id": "7df54484-6ef6-4a9b-8be5-52adbf8ec68c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1416410435,
+          "mode": "list",
+          "cachedResultName": "01_일일수집로그",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1416410435"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "수집일": "={{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }}",
+            "채널": "네이버",
+            "캠페인": "={{ $json.name }}"
+          },
+          "matchingColumns": [
+            "01. 일일 수집 로그 (Collector 자동 기록)"
+          ],
+          "schema": [
+            {
+              "id": "수집일",
+              "displayName": "수집일",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "채널",
+              "displayName": "채널",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "키워드",
+              "displayName": "키워드",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "캠페인",
+              "displayName": "캠페인",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "광고그룹",
+              "displayName": "광고그룹",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "노출",
+              "displayName": "노출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "클릭",
+              "displayName": "클릭",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "비용",
+              "displayName": "비용",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "전환수",
+              "displayName": "전환수",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "전환율",
+              "displayName": "전환율",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "매출",
+              "displayName": "매출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ROAS",
+              "displayName": "ROAS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "쇼핑순위",
+              "displayName": "쇼핑순위",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "headerRow": 2
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        500,
+        200
+      ],
+      "id": "4ee56b47-7621-4fe4-9761-a4551d01ddd7",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "4b7a7f8b-9262-44ce-81e3-c6b1f1eab0ca",
+      "name": "스케쥴러"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\nconst timestamp = Date.now().toString();\nconst method = 'POST';\nconst uri = '/stat-reports';\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nconst yyyy = yesterday.getFullYear();\nconst mm = String(yesterday.getMonth() + 1).padStart(2, '0');\nconst dd = String(yesterday.getDate()).padStart(2, '0');\nconst statDt = `${yyyy}-${mm}-${dd}`;\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n    reportTp: 'AD',\n    statDt: statDt,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        0
+      ],
+      "id": "db3e35e8-91e7-41fe-845d-7ebf7d284761",
+      "name": "서명_생성_stats_POST"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.searchad.naver.com/stat-reports",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "reportTp",
+              "value": "={{ $json.reportTp }}"
+            },
+            {
+              "name": "statDt",
+              "value": "={{ $json.statDt }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        340,
+        0
+      ],
+      "id": "d4ef8666-8ba7-4a31-ab11-2b89338894a8",
+      "name": "StatReport_생성요청"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "9b5011eb-bee1-416c-a9f1-825b01bb3c0e",
+      "name": "30초_대기",
+      "webhookId": "3879a40f-2589-4101-a2ce-0ffa43c7ff9d"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// 변수_설정 노드에서 자격증명 가져오기\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\n\n// 이전 StatReport_생성요청 노드에서 reportJobId 가져오기\nconst reportJobId = $('StatReport_생성요청').item.json.reportJobId;\n\n// HMAC-SHA256 서명 생성 (GET /stat-reports/{reportJobId})\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = `/stat-reports/${reportJobId}`;\n\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\n// 다음 HTTP Request 노드에서 쓸 full URL도 같이 생성\nconst url = `https://api.searchad.naver.com${uri}`;\n\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n    reportJobId: reportJobId,\n    url: url,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        0
+      ],
+      "id": "3e4989ff-37db-4356-9adc-390effdedfda",
+      "name": "서명_생성_status_GET"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "363d7ccd-32fb-4768-90f2-02acf3352ce3",
+      "name": "StatReport_상태확인"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.downloadUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1660,
+        0
+      ],
+      "id": "d6c1c110-98b7-4566-8b6a-2c198ee643e2",
+      "name": "TSV_다운로드"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\n// 변수_설정 노드에서 자격증명 가져오기\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\n\n// StatReport_상태확인 노드에서 downloadUrl 가져오기\nconst downloadUrl = $('StatReport_상태확인').item.json.downloadUrl;\n\n// HMAC-SHA256 서명 생성 (GET /report-download)\n// 주의: 서명에 쓰는 uri는 path만 (쿼리스트링 제외)\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = '/report-download';\n\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n    downloadUrl: downloadUrl,  // 쿼리스트링 포함 full URL (HTTP Request에서 사용)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "36940cb8-96cb-4cbb-8957-0311cd9bfef5",
+      "name": "서명_생성_download_GET"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.data;\nif (!raw || typeof raw !== 'string') {\n  throw new Error('TSV data not found');\n}\n\nconst lines = raw.split('\\n').filter(l => l.trim().length > 0);\nconst byProduct = {};\n\nfor (const line of lines) {\n  const cols = line.split('\\t');\n  if (cols.length < 14) continue;\n\n  const date = cols[0];\n  const campaignId = cols[2];\n  const adgroupId = cols[3];\n  const adId = cols[5];\n  const nvMid = cols[7];\n  const impCnt = parseInt(cols[9]) || 0;\n  const clkCnt = parseInt(cols[10]) || 0;\n  const salesAmt = parseFloat(cols[11]) || 0;   // 광고비 (VAT포함)\n  const rankSum = parseFloat(cols[12]) || 0;    // ← 수정: 이미 \"순위×노출\" 가중합\n  const ccnt = parseInt(cols[13]) || 0;\n\n  if (impCnt === 0) continue;\n\n  if (!byProduct[adId]) {\n    byProduct[adId] = {\n      date, campaignId, adgroupId, adId, nvMid,\n      impCnt: 0, clkCnt: 0, salesAmt: 0, ccnt: 0,\n      rankWeightedSum: 0, rankWeightTotal: 0\n    };\n  }\n\n  const p = byProduct[adId];\n  p.impCnt += impCnt;\n  p.clkCnt += clkCnt;\n  p.salesAmt += salesAmt;\n  p.ccnt += ccnt;\n  p.rankWeightedSum += rankSum;    // ← 수정: 재곱 제거, 그대로 누적\n  p.rankWeightTotal += impCnt;\n}\n\nconst formatDate = (d) => d.substring(0,4) + '-' + d.substring(4,6) + '-' + d.substring(6,8);\n\nconst results = Object.values(byProduct).map((p) => {\n  const ctr = p.impCnt > 0 ? (p.clkCnt / p.impCnt) * 100 : 0;\n  const crto = p.clkCnt > 0 ? (p.ccnt / p.clkCnt) * 100 : 0;\n  const avgRnk = p.rankWeightTotal > 0 ? (p.rankWeightedSum / p.rankWeightTotal) : 0;\n\n  return {\n    json: {\n      수집일: formatDate(p.date),\n      채널: '쇼핑검색광고',\n      캠페인ID: p.campaignId,\n      광고그룹ID: p.adgroupId,\n      상품ID: p.adId,\n      nvMid: p.nvMid,\n      노출: p.impCnt,\n      클릭: p.clkCnt,\n      CTR: Number(ctr.toFixed(2)),\n      비용: p.salesAmt,\n      전환수: p.ccnt,\n      전환율: Number(crto.toFixed(2)),\n      매출: 0,\n      ROAS: 0,\n      평균노출순위: Number(avgRnk.toFixed(1))\n    }\n  };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        0
+      ],
+      "id": "c49b13fc-2b36-40d0-ba8f-213e63834932",
+      "name": "TSV_파싱"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\n\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = '/ncc/adgroups';\n\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\n\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2100,
+        0
+      ],
+      "id": "f4b70738-a9c9-4ed8-987a-2531abd4192d",
+      "name": "서명_생성_adgroups_GET"
+    },
+    {
+      "parameters": {
+        "url": "https://api.searchad.naver.com/ncc/adgroups",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2320,
+        0
+      ],
+      "id": "4f70783c-2a59-4d9c-bebe-95f24f9b2ffb",
+      "name": "HTTP_adgroups"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $('TSV_파싱').all();\nconst campaignMap = {};\nfor (const item of $('HTTP Request').all()) {\n  const c = item.json;\n  if (c.nccCampaignId) campaignMap[c.nccCampaignId] = c.name || c.nccCampaignId;\n}\nconst adgroupMap = {};\nfor (const item of $('HTTP_adgroups').all()) {\n  const a = item.json;\n  if (a.nccAdgroupId) adgroupMap[a.nccAdgroupId] = a.name || a.nccAdgroupId;\n}\nreturn rows.map((item) => {\n  const r = item.json;\n  return {\n    json: {\n      수집일: r.수집일,\n      채널: r.채널,\n      캠페인: campaignMap[r.캠페인ID] || r.캠페인ID,\n      광고그룹: adgroupMap[r.광고그룹ID] || r.광고그룹ID,\n      상품명: r.상품ID,\n      노출: r.노출,\n      클릭: r.클릭,\n      CTR: r.CTR,\n      비용: r.비용,\n      전환수: r.전환수,\n      전환율: r.전환율,\n      매출: r.매출,\n      ROAS: r.ROAS,\n      평균노출순위: r.평균노출순위,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2540,
+        0
+      ],
+      "id": "7d077d51-7474-431e-a6df-eb09181b18f2",
+      "name": "이름조인"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1416410435,
+          "mode": "list",
+          "cachedResultName": "01_일일수집로그",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1416410435"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "수집일": "={{ $json.수집일 }}",
+            "채널": "={{ $json.채널 }}",
+            "캠페인": "={{ $json.캠페인 }}",
+            "광고그룹": "={{ $json.광고그룹 }}",
+            "상품명": "={{ $json.상품명 }}",
+            "노출": "={{ $json.노출 }}",
+            "클릭": "={{ $json.클릭 }}",
+            "CTR": "={{ $json.CTR }}",
+            "비용": "={{ $json.비용 }}",
+            "평균노출순위": "={{ $json.평균노출순위 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "수집일",
+              "displayName": "수집일",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "채널",
+              "displayName": "채널",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "캠페인",
+              "displayName": "캠페인",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "광고그룹",
+              "displayName": "광고그룹",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "상품명",
+              "displayName": "상품명",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "노출",
+              "displayName": "노출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "클릭",
+              "displayName": "클릭",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "비용",
+              "displayName": "비용",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "평균노출순위",
+              "displayName": "평균노출순위",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "headerRow": 2
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2760,
+        0
+      ],
+      "id": "834ecc4e-a994-4686-a6f6-166fe4c195ff",
+      "name": "시트_저장_Phase2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1248602534,
+          "mode": "list",
+          "cachedResultName": "상품매핑",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1248602534"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A:B"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2540,
+        200
+      ],
+      "id": "330d2e8a-a09d-4c11-9d58-77b9b6deab1f",
+      "name": "상품매핑_읽기",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7e775283-fab6-4a30-87fa-e55b076cd048",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "BUILT",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1220,
+        0
+      ],
+      "id": "d3b5b935-5176-4c69-a941-6a8be32bd178",
+      "name": "상태확인_분기"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\nconst timestamp = Date.now().toString();\nconst method = 'POST';\nconst uri = '/stat-reports';\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\nconst yyyy = yesterday.getFullYear();\nconst mm = String(yesterday.getMonth() + 1).padStart(2, '0');\nconst dd = String(yesterday.getDate()).padStart(2, '0');\nconst statDt = `${yyyy}-${mm}-${dd}`;\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n    reportTp: 'AD_CONVERSION',\n    statDt: statDt,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        -600
+      ],
+      "id": "ebbd45fe-13c6-4e72-b624-e749176b2f6e",
+      "name": "서명_생성_conv_POST"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.searchad.naver.com/stat-reports",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"reportTp\": \"{{ $json.reportTp }}\",\n  \"statDt\": \"{{ $json.statDt }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        340,
+        -600
+      ],
+      "id": "4c8965cf-6301-4fe0-b565-f3ab44c1a267",
+      "name": "ConvReport_생성요청"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        -600
+      ],
+      "id": "7203d04f-a12b-419d-9251-ee42e80d979a",
+      "name": "60초_대기_conv",
+      "webhookId": "60b287b4-fe31-44ab-aa3b-9e03a739b7fa"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\nconst reportJobId = $('ConvReport_생성요청').item.json.reportJobId;\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = '/stat-reports/' + reportJobId;\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n    reportJobId: reportJobId,\n    url: 'https://api.searchad.naver.com/stat-reports/' + reportJobId,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        -600
+      ],
+      "id": "b44d69e8-17e4-4a85-96d3-4a48ca0bada9",
+      "name": "서명_생성_conv_status_GET"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1000,
+        -600
+      ],
+      "id": "1b5afdbf-89da-4591-80e5-d8ff0ebcc922",
+      "name": "ConvReport_상태확인"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "16c23411-c9ab-4e5b-8ed6-f8bfa6bfed07",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "BUILT",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1220,
+        -600
+      ],
+      "id": "775f6309-b00c-4421-bbbd-c0660090ee0f",
+      "name": "상태확인_분기_conv"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\nconst setNode = $('변수_설정');\nconst apiKey = setNode.item.json.naver_api_key;\nconst secretKey = setNode.item.json.naver_secret_key;\nconst customerId = setNode.item.json.naver_customer_id;\nconst downloadUrl = $('ConvReport_상태확인').item.json.downloadUrl;\nconst timestamp = Date.now().toString();\nconst method = 'GET';\nconst uri = '/report-download';\nconst message = `${timestamp}.${method}.${uri}`;\nconst signature = crypto\n  .createHmac('sha256', secretKey)\n  .update(message)\n  .digest('base64');\nreturn [{\n  json: {\n    timestamp: timestamp,\n    signature: signature,\n    api_key: apiKey,\n    customer_id: customerId,\n    downloadUrl: downloadUrl,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -600
+      ],
+      "id": "e3b3eaad-6751-4910-bc06-c6a0f85287e3",
+      "name": "서명_생성_conv_download_GET"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.downloadUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Timestamp",
+              "value": "={{ $json.timestamp }}"
+            },
+            {
+              "name": "X-API-KEY",
+              "value": "={{ $json.api_key }}"
+            },
+            {
+              "name": "X-Customer",
+              "value": "={{ $json.customer_id }}"
+            },
+            {
+              "name": "X-Signature",
+              "value": "={{ $json.signature }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1660,
+        -600
+      ],
+      "id": "4c659d14-a452-46e3-9bdd-cb5eab75205c",
+      "name": "Conv_TSV_다운로드"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tsvText = $input.first().json.data || $input.first().json.body || '';\nconst raw = typeof tsvText === 'string' ? tsvText : String(tsvText);\nconst lines = raw.split('\\n').filter(l => l.trim().length > 0);\n\nconst map = {};\n\nfor (const line of lines) {\n  const col = line.split('\\t');\n  if (col.length < 13) continue;\n\n  const date = col[0];\n  const adId = col[5];\n  const method = String(col[9]).trim();\n  const convType = String(col[10]).trim();\n  const convCount = Number(col[11]) || 0;\n  const convSales = Number(col[12]) || 0;\n\n  if (!map[adId]) {\n    map[adId] = {\n      수집일: date.replace(/^(\\d{4})(\\d{2})(\\d{2})$/, '$1-$2-$3'),\n      상품ID: adId,\n      구매전환수: 0,\n      구매전환매출: 0,\n      직접구매전환수: 0,\n      직접구매전환매출: 0,\n      간접구매전환수: 0,\n      간접구매전환매출: 0,\n      장바구니수: 0,\n      장바구니추정매출: 0,\n      기타전환수: 0,\n    };\n  }\n\n  const row = map[adId];\n\n  if (convType === 'purchase') {\n    row.구매전환수 += convCount;\n    row.구매전환매출 += convSales;\n    if (method === '1') {\n      row.직접구매전환수 += convCount;\n      row.직접구매전환매출 += convSales;\n    } else if (method === '2') {\n      row.간접구매전환수 += convCount;\n      row.간접구매전환매출 += convSales;\n    }\n  } else if (convType === 'add_to_cart') {\n    row.장바구니수 += convCount;\n    row.장바구니추정매출 += convSales;\n  } else {\n    row.기타전환수 += convCount;\n  }\n}\n\nreturn Object.values(map).map(v => ({ json: v }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        -600
+      ],
+      "id": "e1270381-67ea-4d50-b361-c268ef1e8219",
+      "name": "Conv_TSV_파싱"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1885328367,
+          "mode": "list",
+          "cachedResultName": "02_전환수집로그",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1885328367"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "수집일": "={{ $json.수집일 }}",
+            "상품ID": "={{ $json.상품ID }}",
+            "상품명": "=",
+            "구매전환수": "={{ $json.구매전환수 }}",
+            "구매전환매출": "={{ $json.구매전환매출 }}",
+            "직접구매전환수": "={{ $json.직접구매전환수 }}",
+            "직접구매전환매출": "={{ $json.직접구매전환매출 }}",
+            "간접구매전환수": "={{ $json.간접구매전환수 }}",
+            "간접구매전환매출": "={{ $json.간접구매전환매출 }}",
+            "장바구니수": "={{ $json.장바구니수 }}",
+            "장바구니추정매출": "={{ $json.장바구니추정매출 }}",
+            "기타전환수": "={{ $json.기타전환수 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "수집일",
+              "displayName": "수집일",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "상품ID",
+              "displayName": "상품ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "구매전환수",
+              "displayName": "구매전환수",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "구매전환매출",
+              "displayName": "구매전환매출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "직접구매전환수",
+              "displayName": "직접구매전환수",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "직접구매전환매출",
+              "displayName": "직접구매전환매출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "간접구매전환수",
+              "displayName": "간접구매전환수",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "간접구매전환매출",
+              "displayName": "간접구매전환매출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "장바구니수",
+              "displayName": "장바구니수",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "장바구니추정매출",
+              "displayName": "장바구니추정매출",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "기타전환수",
+              "displayName": "기타전환수",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "상품명",
+              "displayName": "상품명",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2100,
+        -600
+      ],
+      "id": "2923c9af-e0d0-4c3c-a315-75a8a575c0f1",
+      "name": "시트_저장_Conv",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1416410435,
+          "mode": "list",
+          "cachedResultName": "01_일일수집로그",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1416410435"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "headerRow": 2
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3600,
+        -1200
+      ],
+      "id": "bb9c6ae2-c3e5-4621-8e11-bbb65eb37aca",
+      "name": "전일데이터_읽기",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 파이프라인 출력 직접 참조 (Merge 노드가 양쪽 완료를 보장)\nconst adRows = $('시트_저장_Phase2').all();\nconst convRows = $('시트_저장_Conv').all();\n\n// 전환 데이터를 상품ID 기준으로 집계\nconst convMap = {};\nfor (const item of convRows) {\n  const r = item.json;\n  const key = r['상품ID'] || '';\n  if (!key) continue;\n  if (!convMap[key]) convMap[key] = { 구매전환수: 0, 구매전환매출: 0, 장바구니수: 0 };\n  convMap[key].구매전환수 += parseInt(r['구매전환수']) || 0;\n  convMap[key].구매전환매출 += parseFloat(r['구매전환매출']) || 0;\n  convMap[key].장바구니수 += parseInt(r['장바구니수']) || 0;\n}\n\n// AD + Conv 조인\nconst merged = adRows.map(item => {\n  const r = item.json;\n  const adId = r['상품명'] || '';\n  const c = convMap[adId] || { 구매전환수: 0, 구매전환매출: 0, 장바구니수: 0 };\n  const cost = parseFloat(r['비용']) || 0;\n  const roas = cost > 0 ? (c.구매전환매출 / cost) * 100 : 0;\n\n  return {\n    json: {\n      수집일: r['수집일'],\n      캠페인: r['캠페인'],\n      광고그룹: r['광고그룹'],\n      상품명: r['상품명'],\n      상품ID: adId,\n      노출: parseInt(r['노출']) || 0,\n      클릭: parseInt(r['클릭']) || 0,\n      CTR: parseFloat(r['CTR']) || 0,\n      비용: cost,\n      전환수_구매: c.구매전환수,\n      전환매출_구매: c.구매전환매출,\n      전환수_장바구니: c.장바구니수,\n      실_ROAS: Number(roas.toFixed(1)),\n      평균노출순위: parseFloat(r['평균노출순위']) || 0,\n    }\n  };\n});\n\nreturn merged;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3800,
+        -1200
+      ],
+      "id": "07ccc36b-3b3c-41fa-8ec4-d60de6fa5415",
+      "name": "데이터_합산"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $('데이터_합산').all();\n\nconst 이상_항목 = [];\nconst 정상_상품 = [];\nlet 총비용 = 0;\nlet 총매출 = 0;\n\nfor (const item of rows) {\n  const r = item.json;\n  총비용 += r.비용;\n  총매출 += r.전환매출_구매;\n  \n  const alerts = [];\n  \n  // D-01: 실_ROAS 전일대비 -20% 이상 하락 (전일 데이터 있는 경우만)\n  if (r.전일_비용 !== null && r.전일_비용 > 0 && r.비용 > 0) {\n    // 전일 ROAS 계산은 전일 전환 데이터가 없으므로 skip (Phase 3.1에서 보완)\n  }\n  \n  // D-02: CTR 전일대비 -40% 이상 하락\n  if (r.전일_CTR !== null && r.전일_CTR > 0) {\n    const ctrDrop = ((r.CTR - r.전일_CTR) / r.전일_CTR) * 100;\n    if (ctrDrop <= -40) {\n      alerts.push({\n        규칙: 'D-02', 심각도: '상',\n        현재값: `CTR ${r.CTR}%`, 전일값: `CTR ${r.전일_CTR}%`,\n        변동: `${ctrDrop.toFixed(1)}%`, 설명: `CTR 전일대비 ${Math.abs(ctrDrop).toFixed(1)}% 하락`\n      });\n    }\n  }\n  \n  // D-03: 평균노출순위 전일대비 5단계+ 하락\n  if (r.전일_평균노출순위 !== null && r.전일_평균노출순위 > 0) {\n    const rankDrop = r.평균노출순위 - r.전일_평균노출순위;\n    if (rankDrop >= 5) {\n      alerts.push({\n        규칙: 'D-03', 심각도: '중',\n        현재값: `순위 ${r.평균노출순위}`, 전일값: `순위 ${r.전일_평균노출순위}`,\n        변동: `+${rankDrop.toFixed(1)}단계`, 설명: `평균노출순위 ${rankDrop.toFixed(1)}단계 하락`\n      });\n    }\n  }\n  \n  // D-04: 노출 > 0 & 클릭 = 0\n  if (r.노출 > 100 && r.클릭 === 0) {\n    alerts.push({\n      규칙: 'D-04', 심각도: '중',\n      현재값: `노출 ${r.노출} / 클릭 0`, 전일값: '-',\n      변동: '-', 설명: `노출 ${r.노출}회인데 클릭 0건`\n    });\n  }\n  \n  // 추가: 비용 > 10,000 & 전환수_구매 = 0\n  if (r.비용 > 10000 && r.전환수_구매 === 0) {\n    alerts.push({\n      규칙: 'COST-NO-CONV', 심각도: '상',\n      현재값: `비용 ${r.비용.toLocaleString()}원 / 전환 0건`, 전일값: '-',\n      변동: '-', 설명: `비용 ${r.비용.toLocaleString()}원 소진, 구매전환 0건`\n    });\n  }\n  \n  if (alerts.length > 0) {\n    for (const a of alerts) {\n      이상_항목.push({\n        상품명: r.상품명, 상품ID: r.상품ID, ...a\n      });\n    }\n  } else {\n    정상_상품.push(r.상품명);\n  }\n}\n\nconst 전체ROAS = 총비용 > 0 ? ((총매출 / 총비용) * 100).toFixed(1) : '0';\n\nreturn [{\n  json: {\n    정상_상품: 정상_상품,\n    이상_항목: 이상_항목,\n    요약: {\n      총_상품수: rows.length,\n      정상: 정상_상품.length,\n      이상: 이상_항목.length,\n      심각도_상: 이상_항목.filter(a => a.심각도 === '상').length,\n      심각도_중: 이상_항목.filter(a => a.심각도 === '중').length,\n      총_비용: 총비용,\n      총_매출_구매: 총매출,\n      전체_실_ROAS: 전체ROAS + '%'\n    },\n    원본데이터: rows.map(r => r.json)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3650,
+        -1200
+      ],
+      "id": "74897fca-e6f3-450a-a05e-34c9a692445e",
+      "name": "Verifier_L1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "39cb3d21-a31f-4bf0-9b27-2c377a540881",
+              "leftValue": "={{ $json.이상_항목.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "name": "filter.operator.gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3900,
+        -1200
+      ],
+      "id": "95033a6a-da56-4800-9d24-2d8b7fd655bc",
+      "name": "이상_분기"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst 요약 = data.요약;\n\nconst html = `\n<h2>하나사인몰 광고 에이전트 일일 리포트</h2>\n<p>📅 ${data.원본데이터[0]?.수집일 || '날짜 미확인'} 데이터 기준</p>\n<hr>\n<h3>■ 핵심 지표</h3>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr><td>총 광고비</td><td>${요약.총_비용.toLocaleString()}원</td></tr>\n<tr><td>총 매출(구매)</td><td>${요약.총_매출_구매.toLocaleString()}원</td></tr>\n<tr><td>실 ROAS</td><td>${요약.전체_실_ROAS}</td></tr>\n<tr><td>총 상품수</td><td>${요약.총_상품수}개</td></tr>\n</table>\n<h3>■ 이상 탐지 결과</h3>\n<p style=\"color:green; font-weight:bold;\">✅ 이상 항목 없음. 정상 운영 중.</p>\n<hr>\n<p style=\"color:gray; font-size:12px;\">하나사인몰 광고 에이전트 자동 생성</p>\n`;\n\nreturn [{ json: { report_html: html, subject: `[하나사인몰] ${data.원본데이터[0]?.수집일 || ''} 광고 리포트 — 정상` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4200,
+        -1000
+      ],
+      "id": "d2eaa3e5-cb30-4499-b2aa-af8a3b7785ff",
+      "name": "Reporter_정상"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst setNode = $('변수_설정');\nconst apiKey = setNode.first().json.anthropic_api_key;\n\nconst prompt = `당신은 하나사인몰 네이버 쇼핑검색광고 분석 전문가(Analyst)입니다.\n\n## 업종 맥락\n- 사인물 제작·판매 (게시판, 안내판, 주차스티커, 입간판 등)\n- 주요 고객: 아파트, 학교, 공공기관, 사업장\n- 사인물 업종은 CS/전화/카톡 주문 비중이 높아, 온라인 전환 0건 = 매출 0이 아님\n- 계절성: 봄(3~5월) 시설 점검 시즌, 가을(9~10월) 학교·공공기관 발주 시즌\n\n## 오늘 이상 탐지 결과\n${JSON.stringify(data.이상_항목, null, 2)}\n\n## 전체 요약\n${JSON.stringify(data.요약, null, 2)}\n\n## 지시사항\n1. 각 이상 항목별로 가능한 원인을 2~3개 분석하세요\n2. 업종 특수성(사인물, 계절성, CS 전환)을 반드시 고려하세요\n3. \"원인 불명\"이면 솔직히 말하세요. 억지 해석 금지.\n4. 심각도 \"상\" 항목은 우선 분석하세요\n\n## 출력 형식 (JSON만 출력)\n{\n  \"분석결과\": [\n    { \"상품명\": \"...\", \"상품ID\": \"...\", \"규칙\": \"...\", \"원인분석\": [\"원인1\", \"원인2\"], \"신뢰도\": 0.7, \"추가확인필요\": \"...\" }\n  ],\n  \"전체_소견\": \"...\"\n}`;\n\nreturn [{\n  json: {\n    anthropic_api_key: apiKey,\n    prompt: prompt,\n    원본데이터: data\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4200,
+        -1400
+      ],
+      "id": "c8ed78bb-59e4-4487-a3b1-5249068e339c",
+      "name": "Analyst_프롬프트"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $json.anthropic_api_key }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 2000,\n  \"messages\": [{\"role\": \"user\", \"content\": {{ JSON.stringify($json.prompt) }} }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4450,
+        -1400
+      ],
+      "id": "e7841b4b-426f-4026-8e68-e972149d29f8",
+      "name": "Analyst_API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const analystRaw = $('Analyst_API').first().json;\nconst analystText = analystRaw.content?.[0]?.text || JSON.stringify(analystRaw);\nconst origData = $('Analyst_프롬프트').first().json.원본데이터;\nconst setNode = $('변수_설정');\nconst apiKey = setNode.first().json.anthropic_api_key;\n\nconst prompt = `당신은 하나사인몰 네이버 쇼핑검색광고 전략가(Strategist)입니다.\n\n## Analyst 분석 결과\n${analystText}\n\n## 현재 규칙 제약 (반드시 준수)\n- 입찰가 단일 변경폭 최대 ±30% (A-01)\n- 변경폭 10% 초과 시 사람 승인 필수 (A-02/F-01)\n- 최소 입찰가 70원 (A-03)\n- 동일 소재 1일 1회만 변경 (B-02)\n- 삭제/정지/예산변경은 제안만 (실행은 사람)\n- 일 총 변경 건수 50건 이하 (B-01)\n\n## 지시사항\n1. 이상 항목별로 구체적 조정안을 제안하세요 (입찰가 +/-%, 관찰, 소재 교체 등)\n2. 각 제안의 근거를 명시하세요\n3. 규칙 제약을 넘는 제안은 절대 하지 마세요\n4. CS 경유 전환 가능성이 있으면 \"1주 관찰\" 우선 권장\n5. 제안별 예상 효과를 수치로 추정하세요\n\n## 출력 형식 (JSON만 출력)\n{\n  \"제안\": [\n    { \"상품명\": \"...\", \"상품ID\": \"...\", \"조치\": \"입찰가 -15%\", \"근거\": \"...\", \"예상효과\": \"...\", \"승인필요\": true, \"신뢰도\": 0.75 }\n  ],\n  \"총_예상절감\": \"일 약 X원\",\n  \"총_변경건수\": 0\n}`;\n\nreturn [{\n  json: {\n    anthropic_api_key: apiKey,\n    prompt: prompt,\n    analyst_result: analystText,\n    원본데이터: origData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4700,
+        -1400
+      ],
+      "id": "f39592f7-1078-4ea5-9d8f-4e1c2049a193",
+      "name": "Strategist_프롬프트"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $json.anthropic_api_key }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 2000,\n  \"messages\": [{\"role\": \"user\", \"content\": {{ JSON.stringify($json.prompt) }} }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        4950,
+        -1400
+      ],
+      "id": "c911a5df-29ff-4021-bccb-e3c5cfc4e71e",
+      "name": "Strategist_API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const strategistRaw = $('Strategist_API').first().json;\nconst strategistText = strategistRaw.content?.[0]?.text || JSON.stringify(strategistRaw);\nconst origData = $('Strategist_프롬프트').first().json.원본데이터;\nconst analystText = $('Strategist_프롬프트').first().json.analyst_result;\nconst setNode = $('변수_설정');\nconst apiKey = setNode.first().json.anthropic_api_key;\n\nconst prompt = `당신은 하나사인몰 네이버 쇼핑검색광고 비평가(Critic)입니다.\nStrategist가 제안한 조정안을 반박하는 것이 당신의 역할입니다.\n\n## Strategist 제안\n${strategistText}\n\n## 원본 이상 항목 (독립 검증용)\n${JSON.stringify(origData?.이상_항목 || [], null, 2)}\n\n## 업종 맥락\n- 사인물 업종은 CS/전화/카톡 주문 비중이 큼\n- 온라인 전환 0건이어도 실제로는 CS 경유 매출이 발생할 수 있음\n- 계절성이 있어 단기 데이터로 트렌드 판단하면 위험\n- 공공기관/학교는 분기별 발주 패턴이 있음\n\n## 지시사항\n1. 각 제안에 대해 최소 1개 이상의 반박을 제시하세요\n2. 반박 유형: 데이터 부족, 계절 요인, CS 전환 미반영, 과도한 변경폭, 관찰 기간 부족\n3. 반박이 없으면 \"동의\"라고 명시하세요. 억지 반박 금지.\n4. 최종적으로 각 제안을 \"동의 / 수정 권장 / 보류 권장\" 중 하나로 판정하세요\n\n## 출력 형식 (JSON만 출력)\n{\n  \"반박\": [\n    { \"상품명\": \"...\", \"Strategist_제안\": \"...\", \"반박\": [\"...\"], \"판정\": \"수정 권장\", \"수정안\": \"...\" }\n  ],\n  \"전체_의견\": \"...\"\n}`;\n\nreturn [{\n  json: {\n    anthropic_api_key: apiKey,\n    prompt: prompt,\n    strategist_result: strategistText,\n    analyst_result: analystText,\n    원본데이터: origData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5200,
+        -1400
+      ],
+      "id": "9fa759b6-2bc4-45f7-be00-44e21f36653c",
+      "name": "Critic_프롬프트"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $json.anthropic_api_key }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 2000,\n  \"messages\": [{\"role\": \"user\", \"content\": {{ JSON.stringify($json.prompt) }} }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5450,
+        -1400
+      ],
+      "id": "6fa660e3-b660-4312-8646-109177321bbf",
+      "name": "Critic_API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const criticRaw = $('Critic_API').first().json;\nconst criticText = criticRaw.content?.[0]?.text || JSON.stringify(criticRaw);\nconst origData = $('Critic_프롬프트').first().json.원본데이터;\nconst analystText = $('Critic_프롬프트').first().json.analyst_result;\nconst strategistText = $('Critic_프롬프트').first().json.strategist_result;\nconst setNode = $('변수_설정');\nconst apiKey = setNode.first().json.anthropic_api_key;\n\nconst prompt = `당신은 하나사인몰 네이버 쇼핑검색광고 최종 검증관(Verifier L2)입니다.\n\n## 3자 의견 종합\n### Analyst 분석\n${analystText}\n\n### Strategist 제안\n${strategistText}\n\n### Critic 반박\n${criticText}\n\n## 규칙 제약 (최종 확인)\n- 입찰가 변경폭 ±30% 이내 (A-01)\n- 10% 초과 시 사람 승인 (F-01)\n- 최소 입찰가 70원 (A-03)\n- 일 총 변경 50건 이하 (B-01)\n- 삭제/정지/예산변경은 사람만 (C-01~C-03)\n- 신뢰도 0.7 미만이면 사람 승인 전환 (E-02)\n\n## 지시사항\n1. 각 제안에 대해 Critic 반박을 반영한 최종안을 결정하세요\n2. 규칙 위반이 없는지 최종 확인하세요\n3. 최종 신뢰도를 산출하세요 (0~1)\n4. 신뢰도 0.7 미만은 \"사람 판단 필요\"로 분류하세요\n5. 자동 실행 가능 / 사람 승인 필요 / 보류 중 하나로 분류하세요\n\n## 출력 형식 (JSON만 출력)\n{\n  \"최종판정\": [\n    { \"상품명\": \"...\", \"상품ID\": \"...\", \"최종조치\": \"...\", \"규칙검증\": \"...\", \"신뢰도\": 0.7, \"분류\": \"사람 승인 필요\", \"사유\": \"...\" }\n  ],\n  \"자동실행_가능\": 0,\n  \"사람_승인_필요\": 0,\n  \"보류\": 0\n}`;\n\nreturn [{\n  json: {\n    anthropic_api_key: apiKey,\n    prompt: prompt,\n    원본데이터: origData\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5700,
+        -1400
+      ],
+      "id": "573d0c98-7ad1-442d-850b-d14c8e495885",
+      "name": "Verifier_L2_프롬프트"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{ $json.anthropic_api_key }}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 2000,\n  \"messages\": [{\"role\": \"user\", \"content\": {{ JSON.stringify($json.prompt) }} }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5950,
+        -1400
+      ],
+      "id": "37fdd288-b024-47da-8633-c372bf620f75",
+      "name": "Verifier_L2_API"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 이상 경로에서 왔으면 LLM 결과 있음, 정상 경로면 Reporter_정상에서 옴\nlet reportHtml = '';\nlet subject = '';\n\ntry {\n  // 이상 경로: Verifier_L2 결과가 있는 경우\n  const v2Raw = $('Verifier_L2_API').first().json;\n  const v2Text = v2Raw.content?.[0]?.text || JSON.stringify(v2Raw);\n  const origData = $('Verifier_L2_프롬프트').first().json.원본데이터;\n  const 요약 = origData?.요약 || {};\n  \n  let v2Json = {};\n  try {\n    const jsonMatch = v2Text.match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) v2Json = JSON.parse(jsonMatch[0]);\n  } catch(e) { v2Json = { raw: v2Text }; }\n  \n  const 판정목록 = v2Json.최종판정 || [];\n  const 판정rows = 판정목록.map(p => \n    `<tr><td>${p.상품명||''}</td><td>${p.최종조치||''}</td><td>${p.신뢰도||'-'}</td><td>${p.분류||''}</td><td>${p.사유||''}</td></tr>`\n  ).join('\\n');\n  \n  subject = `[하나사인몰] ${origData?.원본데이터?.[0]?.수집일 || ''} 광고 리포트 — 이상 ${요약.이상 || '?'}건`;\n  \n  reportHtml = `\n<h2>하나사인몰 광고 에이전트 일일 리포트</h2>\n<p>📅 ${origData?.원본데이터?.[0]?.수집일 || ''} 데이터 기준</p>\n<hr>\n<h3>■ 핵심 지표</h3>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr><td>총 광고비</td><td>${(요약.총_비용||0).toLocaleString()}원</td></tr>\n<tr><td>총 매출(구매)</td><td>${(요약.총_매출_구매||0).toLocaleString()}원</td></tr>\n<tr><td>실 ROAS</td><td>${요약.전체_실_ROAS||'-'}</td></tr>\n</table>\n<h3>■ 이상 탐지</h3>\n<p>이상 항목: ${요약.이상||0}건 (심각도 상: ${요약.심각도_상||0} / 중: ${요약.심각도_중||0})</p>\n<h3>■ 교차 검증 최종 판정</h3>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n<tr><th>상품명</th><th>조치</th><th>신뢰도</th><th>분류</th><th>사유</th></tr>\n${판정rows}\n</table>\n<p>자동실행: ${v2Json.자동실행_가능||0}건 / 승인필요: ${v2Json.사람_승인_필요||0}건 / 보류: ${v2Json.보류||0}건</p>\n<hr>\n<p style=\"color:gray; font-size:12px;\">하나사인몰 광고 에이전트 자동 생성 (Analyst→Strategist→Critic→Verifier L2)</p>`;\n\n} catch(e) {\n  // 정상 경로: Reporter_정상에서 온 경우\n  const normal = $('Reporter_정상').first().json;\n  reportHtml = normal.report_html;\n  subject = normal.subject;\n}\n\nreturn [{ json: { report_html: reportHtml, subject: subject } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6250,
+        -1200
+      ],
+      "id": "118c352a-327b-42a9-ab97-12887232b546",
+      "name": "리포트_생성"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('변수_설정').first().json.alert_email }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.report_html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        6500,
+        -1200
+      ],
+      "id": "da9eff16-a5dc-430b-990a-e6ed2eca2026",
+      "name": "Gmail_발송",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GMAIL_CREDENTIAL_ID",
+          "name": "Gmail - 하나사인몰"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Phase 1 — 캠페인 메타 수집 (비활성)\n캠페인 12개 메타데이터 수집 → 시트 저장\n*현재 Deactivated*"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        150
+      ],
+      "id": "b8532c57-fac8-4f03-b55b-7c64e2af0a73",
+      "name": "Sticky_Phase1"
+    },
+    {
+      "parameters": {
+        "content": "## 📊 Phase 2-A — AD 리포트 수집\nStatReport API → TSV 파싱 → 상품별 합산 → 01_일일수집로그\n약 1,300행/일",
+        "width": 2800,
+        "height": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -180
+      ],
+      "id": "7d6c5737-0120-4a9f-9e6a-5289449ee133",
+      "name": "Sticky_Phase2_AD"
+    },
+    {
+      "parameters": {
+        "content": "## 💰 Phase 2-B — AD_CONVERSION 리포트 수집\n전환 데이터 수집 → purchase/add_to_cart 분리 → 02_전환수집로그\n약 70행/일",
+        "width": 2200,
+        "height": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -780
+      ],
+      "id": "6a60a461-aac0-4389-82a5-67f4edd963d6",
+      "name": "Sticky_Phase2_Conv"
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 Phase 3 — LLM 교차 검증 파이프라인\n시트 저장 완료 → 시트에서 다시 읽기 → 데이터 합산 → Verifier L1 → [이상시] Analyst→Strategist→Critic→Verifier L2 → 리포트 → Gmail\nClaude Sonnet 4회 호출 / 일 ~160원",
+        "width": 3400,
+        "height": 180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3060,
+        -1580
+      ],
+      "id": "9665ac04-45b1-4681-abbd-dce8e3b730ca",
+      "name": "Sticky_Phase3"
+    },
+    {
+      "parameters": {
+        "content": "### ✅ 정상 경로\n이상 없으면 여기로"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4150,
+        -950
+      ],
+      "id": "1d1bc5c8-b459-469f-9c61-16b0d2c0b548",
+      "name": "Sticky_정상경로"
+    },
+    {
+      "parameters": {
+        "content": "### 🚨 이상 경로\nAnalyst → Strategist → Critic → Verifier L2\n4단계 교차 검증"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        4150,
+        -1580
+      ],
+      "id": "63068d97-d61f-40cf-9b51-6b9896b3de20",
+      "name": "Sticky_이상경로"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1416410435,
+          "mode": "list",
+          "cachedResultName": "01_일일수집로그",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1416410435"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {
+          "locationDefine": {
+            "values": {
+              "headerRow": 2
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3200,
+        -1200
+      ],
+      "id": "489832e5-d8fa-4484-816b-cee4a476605f",
+      "name": "01_금일AD_읽기",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI",
+          "mode": "list",
+          "cachedResultName": "하나사인몰 광고 에이전트",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1885328367,
+          "mode": "list",
+          "cachedResultName": "02_전환수집로그",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI/edit#gid=1885328367"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3400,
+        -1200
+      ],
+      "id": "e53a3663-d171-42b0-932b-83f4b8c1a146",
+      "name": "02_금일Conv_읽기",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HjfwX5DgD4iXkptZ",
+          "name": "Google Sheets - 하나사인몰"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        3000,
+        -1200
+      ],
+      "id": "c09a904a-fe30-43e8-b3e9-92000b0524a2",
+      "name": "Phase3_시작_대기"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "변수_설정": {
+      "main": [
+        [
+          {
+            "node": "서명_생성",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "서명_생성_conv_POST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "스케쥴러": {
+      "main": [
+        [
+          {
+            "node": "변수_설정",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_stats_POST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_stats_POST": {
+      "main": [
+        [
+          {
+            "node": "StatReport_생성요청",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatReport_생성요청": {
+      "main": [
+        [
+          {
+            "node": "30초_대기",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "30초_대기": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_status_GET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_status_GET": {
+      "main": [
+        [
+          {
+            "node": "StatReport_상태확인",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StatReport_상태확인": {
+      "main": [
+        [
+          {
+            "node": "상태확인_분기",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_download_GET": {
+      "main": [
+        [
+          {
+            "node": "TSV_다운로드",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TSV_다운로드": {
+      "main": [
+        [
+          {
+            "node": "TSV_파싱",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TSV_파싱": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_adgroups_GET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_adgroups_GET": {
+      "main": [
+        [
+          {
+            "node": "HTTP_adgroups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP_adgroups": {
+      "main": [
+        [
+          {
+            "node": "이름조인",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "이름조인": {
+      "main": [
+        [
+          {
+            "node": "시트_저장_Phase2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "상품매핑_읽기": {
+      "main": [
+        []
+      ]
+    },
+    "상태확인_분기": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_download_GET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_conv_POST": {
+      "main": [
+        [
+          {
+            "node": "ConvReport_생성요청",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConvReport_생성요청": {
+      "main": [
+        [
+          {
+            "node": "60초_대기_conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "60초_대기_conv": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_conv_status_GET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_conv_status_GET": {
+      "main": [
+        [
+          {
+            "node": "ConvReport_상태확인",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConvReport_상태확인": {
+      "main": [
+        [
+          {
+            "node": "상태확인_분기_conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "상태확인_분기_conv": {
+      "main": [
+        [
+          {
+            "node": "서명_생성_conv_download_GET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "서명_생성_conv_download_GET": {
+      "main": [
+        [
+          {
+            "node": "Conv_TSV_다운로드",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conv_TSV_다운로드": {
+      "main": [
+        [
+          {
+            "node": "Conv_TSV_파싱",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conv_TSV_파싱": {
+      "main": [
+        [
+          {
+            "node": "시트_저장_Conv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "시트_저장_Phase2": {
+      "main": [
+        [
+          {
+            "node": "Phase3_시작_대기",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "시트_저장_Conv": {
+      "main": [
+        [
+          {
+            "node": "Phase3_시작_대기",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "전일데이터_읽기": {
+      "main": [
+        []
+      ]
+    },
+    "데이터_합산": {
+      "main": [
+        [
+          {
+            "node": "Verifier_L1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifier_L1": {
+      "main": [
+        [
+          {
+            "node": "이상_분기",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "이상_분기": {
+      "main": [
+        [
+          {
+            "node": "Analyst_프롬프트",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reporter_정상",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reporter_정상": {
+      "main": [
+        [
+          {
+            "node": "리포트_생성",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyst_프롬프트": {
+      "main": [
+        [
+          {
+            "node": "Analyst_API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyst_API": {
+      "main": [
+        [
+          {
+            "node": "Strategist_프롬프트",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strategist_프롬프트": {
+      "main": [
+        [
+          {
+            "node": "Strategist_API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strategist_API": {
+      "main": [
+        [
+          {
+            "node": "Critic_프롬프트",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critic_프롬프트": {
+      "main": [
+        [
+          {
+            "node": "Critic_API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critic_API": {
+      "main": [
+        [
+          {
+            "node": "Verifier_L2_프롬프트",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifier_L2_프롬프트": {
+      "main": [
+        [
+          {
+            "node": "Verifier_L2_API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifier_L2_API": {
+      "main": [
+        [
+          {
+            "node": "리포트_생성",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "리포트_생성": {
+      "main": [
+        [
+          {
+            "node": "Gmail_발송",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "01_금일AD_읽기": {
+      "main": [
+        []
+      ]
+    },
+    "02_금일Conv_읽기": {
+      "main": [
+        []
+      ]
+    },
+    "Phase3_시작_대기": {
+      "main": [
+        [
+          {
+            "node": "데이터_합산",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d3528d0b-760c-424f-b44b-872363dd2e22",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7b5819f46c804de3fdcc8cacb08c20ae12fbfc1a017c6f35e354f49f4b325dcc"
+  },
+  "id": "UJrNqijTudgU91sX",
+  "tags": []
+}
