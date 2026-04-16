@@ -12,3 +12,4 @@
 - [전체 진행 현황 종합](project_overall_progress.md) — Phase 1~3.5 완료, Phase 4 JSON 대기, Phase 5 미착수. 파일/시트/다음할일 정리
 - [n8n 워크플로우 명칭 정리](reference_n8n_workflows.md) — 메인=네이버 검색광고 에이전트_파이프라인, Webhook=Phase4_승인_자동반영. 도메인: hanasignmall.app.n8n.cloud
 - [네이버 쇼핑검색광고 API PUT 요구사항](project_naver_shopping_ad_api_quirks.md) — 소재 PUT 시 type/nccAdId 필수, bidAmt 10원 단위, adAttr.bidAmt 경로, ?fields=adAttr 쿼리
+- [집 PC Cowork 이식 + 동기화 체계](project_home_pc_migration.md) — 2026-04-16 집 PC 메모리 복원 완료. sync_memory.sh(pull/push/check) + GitHub 리포 기반 양방향 동기화
