@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 광고 에이전트 중간 보고서 | 하나사인몰</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: #f0f2f5; color: #2d2d2d; line-height: 1.8; font-size: 15px; }
+  .container { max-width: 860px; margin: 0 auto; background: #fff; box-shadow: 0 2px 48px rgba(0,0,0,0.07); }
+
+  .cover { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e293b 100%); color: #fff; padding: 56px 52px; position: relative; overflow: hidden; }
+  .cover::after { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; border-radius: 50%; background: rgba(59,130,246,0.08); }
+  .cover .label { display: inline-block; background: rgba(59,130,246,0.25); padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 1.5px; margin-bottom: 20px; }
+  .cover h1 { font-size: 26px; font-weight: 700; line-height: 1.4; margin-bottom: 6px; }
+  .cover .subtitle { font-size: 15px; font-weight: 300; opacity: 0.8; margin-bottom: 28px; }
+  .cover .meta { font-size: 13px; opacity: 0.5; line-height: 2; }
+
+  .content { padding: 44px 52px; }
+  .section { margin-bottom: 40px; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .section-number { background: #1e3a5f; color: #fff; width: 30px; height: 30px; border-radius: 8px; text-align: center; line-height: 30px; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  h2 { font-size: 19px; font-weight: 700; color: #1e293b; }
+  p { margin-bottom: 12px; color: #4b5563; font-size: 14.5px; }
+
+  .summary-box { background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border: 1px solid #bfdbfe; border-radius: 12px; padding: 24px 28px; margin-bottom: 32px; }
+  .summary-box h3 { font-size: 15px; font-weight: 700; color: #1e3a5f; margin-bottom: 10px; }
+  .summary-box p { font-size: 14.5px; color: #334155; margin-bottom: 6px; }
+  .highlight { color: #1d4ed8; font-weight: 700; }
+
+  /* 프로세스 */
+  .process-flow { display: flex; align-items: stretch; gap: 0; margin: 20px 0; }
+  .process-step { flex: 1; min-width: 120px; text-align: center; position: relative; }
+  .step-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; font-size: 20px; position: relative; z-index: 2; }
+  .step-circle.done { background: #dcfce7; border: 3px solid #16a34a; }
+  .step-circle.current { background: #dbeafe; border: 3px solid #2563eb; animation: pulse 2s infinite; }
+  .step-circle.future { background: #f3f4f6; border: 3px solid #d1d5db; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.3);} 50%{box-shadow:0 0 0 10px rgba(37,99,235,0);} }
+  .step-label { font-size: 11px; font-weight: 600; color: #374151; line-height: 1.3; }
+  .step-sub { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+  .process-step::after { content: ''; position: absolute; top: 24px; left: 50%; width: 100%; height: 3px; background: #e5e7eb; z-index: 1; }
+  .process-step:last-child::after { display: none; }
+  .process-step.done-line::after { background: #16a34a; }
+
+  /* KPI */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+  .kpi-card { text-align: center; padding: 14px 8px; border-radius: 10px; background: #fff; border: 1px solid #e5e7eb; }
+  .kpi-card .value { font-size: 20px; font-weight: 900; color: #1e3a5f; }
+  .kpi-card .value.green { color: #16a34a; }
+  .kpi-card .desc { font-size: 10px; color: #9ca3af; margin-top: 3px; line-height: 1.4; }
+
+  /* 비교 테이블 */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 20px 0; font-size: 13px; }
+  thead th { background: #1e3a5f; color: #fff; padding: 10px 12px; text-align: left; font-weight: 600; font-size: 12px; }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+  tbody tr:nth-child(even) { background: #f9fafb; }
+  tbody tr:last-child td { border-bottom: 2px solid #1e3a5f; }
+
+  /* 발견 카드 */
+  .discover-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+  .discover-card { padding: 16px; border-radius: 10px; border-left: 4px solid; }
+  .discover-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .discover-card p { font-size: 12px; margin: 0; line-height: 1.6; }
+  .dc-red { background: #fef2f2; border-color: #ef4444; }
+  .dc-red h4 { color: #b91c1c; }
+  .dc-red p { color: #7f1d1d; }
+  .dc-orange { background: #fff7ed; border-color: #f97316; }
+  .dc-orange h4 { color: #c2410c; }
+  .dc-orange p { color: #7c2d12; }
+  .dc-blue { background: #eff6ff; border-color: #3b82f6; }
+  .dc-blue h4 { color: #1d4ed8; }
+  .dc-blue p { color: #1e3a5f; }
+
+  /* 실제 작동 증거 */
+  .evidence-box { background: #f0fdf4; border: 2px solid #16a34a; border-radius: 12px; padding: 20px 24px; margin: 14px 0; }
+  .evidence-box h4 { font-size: 14px; font-weight: 700; color: #166534; margin-bottom: 10px; }
+  .evidence-box p { font-size: 13px; color: #15803d; margin-bottom: 4px; }
+
+  /* 시나리오 */
+  .scenario { background: #f8fafc; border-radius: 10px; padding: 20px 24px; margin: 14px 0; border-left: 4px solid #2563eb; }
+  .scenario-title { font-size: 14px; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
+  .scenario-step { display: flex; gap: 10px; margin-bottom: 6px; align-items: flex-start; }
+  .scenario-icon { flex-shrink: 0; width: 24px; height: 24px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .scenario-text { font-size: 12.5px; color: #4b5563; line-height: 1.5; }
+  .scenario-text strong { color: #1e293b; }
+
+  /* 안전장치 */
+  .safety-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; border-left: 4px solid #1e3a5f; }
+  .safety-item .icon { font-size: 18px; flex-shrink: 0; }
+  .safety-item .text { font-size: 12.5px; color: #374151; }
+  .safety-item .text strong { color: #1e293b; }
+
+  /* 타임라인 */
+  .timeline { position: relative; padding-left: 28px; margin: 16px 0; }
+  .timeline::before { content: ''; position: absolute; left: 9px; top: 0; bottom: 0; width: 3px; background: #e5e7eb; border-radius: 2px; }
+  .tl-item { position: relative; margin-bottom: 16px; }
+  .tl-dot { position: absolute; left: -24px; top: 3px; width: 11px; height: 11px; border-radius: 50%; border: 3px solid; background: #fff; }
+  .tl-dot.done { border-color: #16a34a; background: #16a34a; }
+  .tl-dot.current { border-color: #2563eb; background: #2563eb; }
+  .tl-dot.future { border-color: #d1d5db; }
+  .tl-date { font-size: 11px; font-weight: 600; color: #9ca3af; }
+  .tl-title { font-size: 13px; font-weight: 600; color: #1e293b; }
+  .tl-desc { font-size: 12px; color: #6b7280; }
+
+  /* 비용 */
+  .cost-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+  .cost-card { text-align: center; padding: 16px 10px; border-radius: 10px; border: 1px solid #e5e7eb; background: #fafbfc; }
+  .cost-card .num { font-size: 22px; font-weight: 900; color: #1e3a5f; display: block; margin-bottom: 2px; }
+  .cost-card .clabel { font-size: 11px; color: #6b7280; }
+
+  /* 결론 */
+  .conclusion { background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%); color: #fff; border-radius: 12px; padding: 24px 28px; margin-top: 8px; }
+  .conclusion h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .conclusion p { color: rgba(255,255,255,0.85); font-size: 13.5px; margin-bottom: 6px; }
+  .conclusion .em { color: #93c5fd; font-weight: 700; }
+
+  .footer { text-align: center; padding: 20px; font-size: 11px; color: #999; background: #fafbfc; border-top: 1px solid #e5e7eb; }
+
+  @media print { body { background: #fff; } .container { box-shadow: none; } }
+  @media (max-width: 768px) {
+    .cover, .content { padding: 28px 20px; }
+    .kpi-row, .discover-grid { grid-template-columns: repeat(2, 1fr); }
+    .cost-grid { grid-template-columns: 1fr; }
+    .process-flow { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="cover">
+    <div class="label">중간 보고 · 2026.04.15</div>
+    <h1>AI 광고 에이전트 구축 현황</h1>
+    <div class="subtitle">소재 2,000개를 AI가 매일 분석하고 조정안을 제안하는 시스템</div>
+    <div class="meta">웹팀 박상준 차장 → 대표이사</div>
+  </div>
+
+  <div class="content">
+
+    <!-- 한 줄 요약 -->
+    <div class="summary-box">
+      <h3>요약</h3>
+      <p><span class="highlight">1단계(자동 수집) 완료.</span> 소재 2,000개 성과 데이터가 매일 자동으로 쌓이고 있습니다.</p>
+      <p>2단계(AI 분석) 초기 테스트 성공. <span class="highlight">6월 첫째 주 전체 가동 목표.</span></p>
+    </div>
+
+    <!-- 1. 진행 현황 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2>진행 현황 — 50% 완료</h2>
+      </div>
+      <div class="process-flow">
+        <div class="process-step done-line">
+          <div class="step-circle done">&#10003;</div>
+          <div class="step-label">데이터 수집</div>
+          <div class="step-sub">완료</div>
+        </div>
+        <div class="process-step">
+          <div class="step-circle current">2</div>
+          <div class="step-label">AI 분석</div>
+          <div class="step-sub">테스트 중</div>
+        </div>
+        <div class="process-step">
+          <div class="step-circle future">3</div>
+          <div class="step-label">검증</div>
+          <div class="step-sub">5월</div>
+        </div>
+        <div class="process-step">
+          <div class="step-circle future">4</div>
+          <div class="step-label">자동 실행</div>
+          <div class="step-sub">5월 말</div>
+        </div>
+        <div class="process-step">
+          <div class="step-circle future">&#9733;</div>
+          <div class="step-label">풀 가동</div>
+          <div class="step-sub">6월 초</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 첫 테스트 결과 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2>첫 테스트 결과</h2>
+      </div>
+      <p>4월 14일, AI 분석 파이프라인의 첫 테스트를 실행했습니다. 수집된 데이터를 AI가 분석하고 리포트를 생성하는 과정이 정상 동작하는 것을 확인했습니다.</p>
+
+      <div class="evidence-box">
+        <h4>테스트 결과 요약</h4>
+        <p>소재 2,000개 성과 데이터를 AI가 분석</p>
+        <p>이상 항목 45건 자동 감지 (비용 소진 대비 전환 0건 등)</p>
+        <p>실 ROAS 212.1% 자동 산출 (콘솔 허수 아닌 실제 결제 기준)</p>
+      </div>
+
+      <p style="font-size:13px;">기본 구조가 동작하는 것은 확인했으나, 리포트 품질 개선, 판단 정확도 검증, 승인 → 자동 반영 기능 등 <strong>아직 남은 작업이 상당합니다.</strong></p>
+    </div>
+
+    <!-- 3. 구축 과정에서 새로 발견한 것들 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <h2>구축하면서 새로 발견한 것</h2>
+      </div>
+      <p>대행사도, 네이버 콘솔도 알려주지 않는 것들입니다. 이 시스템을 직접 만들었기 때문에 처음으로 확인할 수 있었습니다.</p>
+
+      <div class="discover-grid">
+        <div class="discover-card dc-red">
+          <h4>콘솔 매출이 실제의 5배</h4>
+          <p>네이버가 보여주는 "전환매출"에 장바구니 담기 금액까지 포함. 대부분의 쇼핑몰이 이 사실을 모르고 부풀린 수치로 광고를 운영하고 있음.</p>
+        </div>
+        <div class="discover-card dc-orange">
+          <h4>소재별 효율 편차 최초 파악</h4>
+          <p>2,000개 소재의 개별 수익률을 처음으로 전수 확인. 효율이 높은 소재와 개선이 필요한 소재를 구분할 수 있게 되어, 앞으로 예산을 효율 좋은 쪽에 집중 배분 가능.</p>
+        </div>
+        <div class="discover-card dc-blue">
+          <h4>소재 코드 → 실제 상품명 자동 변환</h4>
+          <p>네이버 리포트에는 "nad-a001-02-000000291669740" 같은 코드만 표시. 네이버 API 자체가 상품명 조회를 지원하지 않아 대행사도 동일. 이 코드가 "슬림업 8구 게시판"이라는 걸 자동 식별하도록 2,208개 매핑 자체 구축.</p>
+        </div>
+      </div>
+
+      <p style="font-size:12.5px; color:#6b7280; margin-bottom:8px; text-align:center; font-weight:600;">4월 13일 하루 기준 (광고비 704,942원)</p>
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="value" style="color:#c9c9c9;">8,210,490원</div>
+          <div class="desc">콘솔 매출 (허수)</div>
+        </div>
+        <div class="kpi-card" style="border:2px solid #16a34a;">
+          <div class="value green">1,644,300원</div>
+          <div class="desc"><strong>실제 결제 매출</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="value" style="color:#c9c9c9;">1,163%</div>
+          <div class="desc">콘솔 ROAS (허수)</div>
+        </div>
+        <div class="kpi-card" style="border:2px solid #16a34a;">
+          <div class="value green">233%</div>
+          <div class="desc"><strong>실제 ROAS</strong><br>1원당 2.3원 매출</div>
+        </div>
+      </div>
+      <p style="font-size:13px;">ROAS 233% = 광고비 1원당 매출 2.3원. 수익 나는 구조. 전화·카톡 주문까지 합하면 실제는 더 높음.</p>
+    </div>
+
+    <!-- 3. 대행사와 다른 점 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <h2>일반 광고 대행사와 다른 점</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:28%">항목</th>
+            <th style="width:36%">일반 대행사</th>
+            <th>이 시스템</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>분석 단위</strong></td>
+            <td>캠페인·광고그룹 단위</td>
+            <td><strong>상품 하나하나 단위</strong></td>
+          </tr>
+          <tr>
+            <td><strong>매출 기준</strong></td>
+            <td>네이버 콘솔 수치 그대로 보고<br>(장바구니 포함 허수)</td>
+            <td><strong>실제 결제 매출만 계산</strong></td>
+          </tr>
+          <tr>
+            <td><strong>관리 범위</strong></td>
+            <td>주요 키워드 10~20개</td>
+            <td><strong>소재 2,000개 전수</strong></td>
+          </tr>
+          <tr>
+            <td><strong>판단 방식</strong></td>
+            <td>담당자 1명의 판단</td>
+            <td><strong>AI 4명이 서로 교차 검증</strong><br>(분석 → 전략 → 반박 → 최종 판정)</td>
+          </tr>
+          <tr>
+            <td><strong>리포트 주기</strong></td>
+            <td>월 1회 (또는 요청 시)</td>
+            <td><strong>매일 자동</strong></td>
+          </tr>
+          <tr>
+            <td><strong>비용</strong></td>
+            <td>월 수십만~수백만 원</td>
+            <td><strong>월 약 5,000원</strong></td>
+          </tr>
+          <tr>
+            <td><strong>우리 업종 이해</strong></td>
+            <td>범용 운영<br>(사인물 특성 모름)</td>
+            <td><strong>CS 전환, 계절성, 발주 패턴 등<br>사인물 맥락 반영</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 4. 작동 방식 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <h2>작동 방식 — AI 4명이 교차 검증</h2>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-title">예시: "주차금지 안내판" 광고비만 나가는 상황</div>
+
+        <div class="scenario-step">
+          <div class="scenario-icon" style="background:#fef3c7;">&#9888;</div>
+          <div class="scenario-text"><strong>감지:</strong> 3일간 광고비 45,000원, 온라인 구매 0건</div>
+        </div>
+        <div class="scenario-step">
+          <div class="scenario-icon" style="background:#dbeafe;">&#128161;</div>
+          <div class="scenario-text"><strong>분석(Analyst):</strong> 클릭은 정상. 상세페이지 문제이거나 전화주문으로 전환 중일 가능성</div>
+        </div>
+        <div class="scenario-step">
+          <div class="scenario-icon" style="background:#dbeafe;">&#128172;</div>
+          <div class="scenario-text"><strong>전략(Strategist):</strong> 입찰가 15% 인하 제안</div>
+        </div>
+        <div class="scenario-step">
+          <div class="scenario-icon" style="background:#fef9c3;">&#9995;</div>
+          <div class="scenario-text"><strong>반박(Critic):</strong> 사인물은 전화주문 많음. CS 확인 전 인하는 위험. 10%로 완화, 1주 관찰 권고</div>
+        </div>
+        <div class="scenario-step">
+          <div class="scenario-icon" style="background:#dcfce7;">&#10003;</div>
+          <div class="scenario-text"><strong>최종(Verifier):</strong> 반박 수용. 10% 인하 + 1주 재평가 → <strong>메일로 리포트 → 승인하면 자동 반영</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 안전장치 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <h2>안전장치</h2>
+      </div>
+      <div class="safety-item">
+        <div class="icon">&#128274;</div>
+        <div class="text"><strong>규칙 제한:</strong> 입찰가 최대 ±30%. 삭제·정지·예산변경은 시스템이 절대 못 함.</div>
+      </div>
+      <div class="safety-item">
+        <div class="icon">&#128101;</div>
+        <div class="text"><strong>AI 교차 검증:</strong> 제안하는 AI와 반박하는 AI 분리. 서로 견제.</div>
+      </div>
+      <div class="safety-item">
+        <div class="icon">&#128100;</div>
+        <div class="text"><strong>사람 승인:</strong> 모든 변경은 승인 없이 실행 불가.</div>
+      </div>
+    </div>
+
+    <!-- 6. 일정 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <h2>일정</h2>
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot done"></div>
+          <div class="tl-date">4월 1~2주차 (완료)</div>
+          <div class="tl-title">데이터 자동 수집 + 상품 매핑 2,208개</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot current"></div>
+          <div class="tl-date">4월 3~4주차 (진행 중)</div>
+          <div class="tl-title">AI 분석 + 교차 검증 + 리포트 시스템</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot future"></div>
+          <div class="tl-date">5월 1~2주차</div>
+          <div class="tl-title">AI 판단 품질 검증 (안전 확보 기간)</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot future"></div>
+          <div class="tl-date">5월 3~4주차</div>
+          <div class="tl-title">승인 → 자동 반영 기능 구축</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot future"></div>
+          <div class="tl-date">6월 1주차</div>
+          <div class="tl-title">전체 가동</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. 비용 -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <h2>비용</h2>
+      </div>
+      <div class="cost-grid">
+        <div class="cost-card">
+          <span class="num">월 ~5,000원</span>
+          <span class="clabel">AI 비용 (Anthropic Claude)</span>
+        </div>
+        <div class="cost-card">
+          <span class="num">0원</span>
+          <span class="clabel">추가 인력</span>
+        </div>
+        <div class="cost-card">
+          <span class="num">0원</span>
+          <span class="clabel">서버·소프트웨어</span>
+        </div>
+      </div>
+      <p style="font-size:13px;">기존 인프라 활용. 웹팀 5인 체제 유지. 대행사 동일 분석 의뢰 시 월 수십만~수백만 원이며, 상품 단위 분석은 제공 불가.</p>
+    </div>
+
+    <!-- 결론 -->
+    <div class="conclusion">
+      <h3>결론</h3>
+      <p><span class="em">1단계 완료.</span> 실제 결제 기준 매출 관리 체계 확보.</p>
+      <p><span class="em">6월 전체 가동.</span> 소재 2,000개 매일 자동 분석 → 조정안 제안 → 승인 시 반영.</p>
+      <p>추가 비용 거의 없음. 기존 인원으로 운영.</p>
+    </div>
+
+  </div>
+
+  <div class="footer">하나사인몰 웹팀 · 2026.04.15</div>
+</div>
+</body>
+</html>
