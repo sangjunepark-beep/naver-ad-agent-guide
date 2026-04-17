@@ -9,7 +9,10 @@
 - [Phase 3 LLM 파이프라인 완주](project_phase3_import_done.md) — 04-15 파이프라인 전체 완주
 - [Phase 3.5 리포트 고도화 완료](project_phase35_done.md) — 04-15 대시보드형 리포트 테스트 성공
 - [Phase 4 승인→자동반영 — E2E 완결](project_phase4_done.md) — 04-18 E2E 전 구간 완결. n8n API PUT으로 노드 schema 수정. 시트 Row3=헤더(gviz Row2). 롤백·가드레일 미완
-- [전체 진행 현황 종합](project_overall_progress.md) — Phase 1~4 완료(E2E) / Phase 5 선행 과제: 메인파이프라인 스케줄 재가동. 2026-04-18 기준
+- [전체 진행 현황 종합](project_overall_progress.md) — Phase 1~5-1 완료. Phase 5-2(효과판정 개선), 5-3(실패학습), 5-4(스케줄 확정) 미착수. 2026-04-18
+- [Phase 5-1 사후 ROAS 자동 측정 완료](project_phase5_done.md) — KvCkk3M3sNcegLgU 활성화. 매일 10:00. 첫 측정 2026-04-21 이후
 - [n8n 워크플로우 명칭 정리](reference_n8n_workflows.md) — 메인=네이버 검색광고 에이전트_파이프라인, Webhook=Phase4_승인_자동반영. 도메인: hanasignmall.app.n8n.cloud
 - [네이버 쇼핑검색광고 API PUT 요구사항](project_naver_shopping_ad_api_quirks.md) — 소재 PUT 시 type/nccAdId 필수, bidAmt 10원 단위, adAttr.bidAmt 경로, ?fields=adAttr
 - [집 PC Cowork 이식 + 동기화 체계](project_home_pc_migration.md) — 2026-04-16 집 PC 메모리 복원 완료. sync_memory.sh(pull/push/check) + GitHub 리포 기반 양방향
+- [n8n API Key (현재 유효)](reference_n8n_api_key.md) — 2026-04-18 갱신. exp≈2026-05-14. 만료 시 /settings/api에서 재발급 후 이 파일 업데이트
+- [상품명 매핑 + 스마트스토어 링크 수정 이력](project_product_mapping_done.md) — 상품매핑_읽기 enable, adId 버그 수정, pLink 헬퍼. productNo 소스파일 미확보(미완)
