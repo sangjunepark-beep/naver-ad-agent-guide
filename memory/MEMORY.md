@@ -1,15 +1,15 @@
 - [최종 결정권과 토큰 소비 사전 컨펌](feedback_decision_and_token_confirmation.md) — 최종 결정권은 사용자에게, 큰 작업은 착수 전 컨펌 필수
-- [모델 혼합·컨텍스트 알림 규칙](feedback_model_mix_and_context.md) — Haiku/Sonnet/Opus 용도 분리, 컨텍스트 50/70/85% 단계별 자동 보고
-- [네이버 광고 콘솔 전환매출 5배 부풀림](project_naver_ad_conversion_inflation.md) — 네이버 "총 전환매출"에 장바구니 가치 포함, 실매출의 5배. 하나사인몰 실_ROAS는 `구매전환매출` 컬럼 사용
-- [하나사인몰 CS 경유 오프라인 전환 비중 큼](feedback_hanasignmall_cs_offline_conversion.md) — 사인물 업종은 CS/전화/카톡 주문 많음. 온라인 전환 0건=매출 0 아님. 소재 OFF/입찰 인하는 CS 확인 후 판단
-- [프로젝트명 변경](project_name_change.md) — "단순등록자동화" → "네이버검색광고 에이전트 빌드"로 변경 (2026-04-14)
+- [모델 혼합·컨텍스트 알림 규칙](feedback_model_mix_and_context.md) — Haiku/Sonnet/Opus 용도별 분리 + 스킬·n8n 노드·업무유형별 매핑표 (2026-04-17)
+- [네이버 광고 콘솔 전환매출 5배 부풀림](project_naver_ad_conversion_inflation.md) — "총 전환매출"에 장바구니 가치 포함, 실매출 5배. 실_ROAS는 `구매전환매출` 컬럼 사용
+- [하나사인몰 CS 경유 오프라인 전환 비중 큼](feedback_hanasignmall_cs_offline_conversion.md) — CS/전화/카톡 주문 많음. 온라인 전환 0건=매출 0 아님. 소재 OFF/입찰 인하는 CS 확인 후
+- [프로젝트명 변경](project_name_change.md) — "단순등록자동화" → "네이버검색광고 에이전트 빌드" (2026-04-14)
 - [구글 시트 QUERY 날짜 비교 해결](feedback_gsheet_query_date_fix.md) — TEXT() 변환 후 FILTER→QUERY 패턴. SUMIF는 OK, FILTER/QUERY는 TEXT 필수
 - [01 시트 구조 변경](project_01sheet_structure_change.md) — 04-15 J~M열 삭제, 현재 A~K 11열. QUERY Col 번호 주의
 - [n8n은 JSON import 방식](feedback_n8n_json_import.md) — 브라우저 조작 금지, JSON export→수정→import. 10배 빠름
 - [Phase 3 LLM 파이프라인 완주](project_phase3_import_done.md) — 04-15 파이프라인 전체 완주
 - [Phase 3.5 리포트 고도화 완료](project_phase35_done.md) — 04-15 대시보드형 리포트 테스트 성공
-- [Phase 4 승인→자동반영 완성](project_phase4_done.md) — 04-16 실제 입찰가 변경(2900→2470) 성공 확인, 시트 기록까지 완결
-- [전체 진행 현황 종합](project_overall_progress.md) — Phase 1~3.5 완료, Phase 4 JSON 대기, Phase 5 미착수. 파일/시트/다음할일 정리
+- [Phase 4 승인→자동반영 — E2E 완결](project_phase4_done.md) — 04-18 E2E 전 구간 완결. n8n API PUT으로 노드 schema 수정. 시트 Row3=헤더(gviz Row2). 롤백·가드레일 미완
+- [전체 진행 현황 종합](project_overall_progress.md) — Phase 1~4 완료(E2E) / Phase 5 선행 과제: 메인파이프라인 스케줄 재가동. 2026-04-18 기준
 - [n8n 워크플로우 명칭 정리](reference_n8n_workflows.md) — 메인=네이버 검색광고 에이전트_파이프라인, Webhook=Phase4_승인_자동반영. 도메인: hanasignmall.app.n8n.cloud
-- [네이버 쇼핑검색광고 API PUT 요구사항](project_naver_shopping_ad_api_quirks.md) — 소재 PUT 시 type/nccAdId 필수, bidAmt 10원 단위, adAttr.bidAmt 경로, ?fields=adAttr 쿼리
-- [집 PC Cowork 이식 + 동기화 체계](project_home_pc_migration.md) — 2026-04-16 집 PC 메모리 복원 완료. sync_memory.sh(pull/push/check) + GitHub 리포 기반 양방향 동기화
+- [네이버 쇼핑검색광고 API PUT 요구사항](project_naver_shopping_ad_api_quirks.md) — 소재 PUT 시 type/nccAdId 필수, bidAmt 10원 단위, adAttr.bidAmt 경로, ?fields=adAttr
+- [집 PC Cowork 이식 + 동기화 체계](project_home_pc_migration.md) — 2026-04-16 집 PC 메모리 복원 완료. sync_memory.sh(pull/push/check) + GitHub 리포 기반 양방향
