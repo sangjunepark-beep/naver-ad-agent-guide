@@ -1,8 +1,8 @@
 ---
 name: 네이버검색광고 에이전트 전체 진행 현황
-description: Phase 1~4 완료(E2E 검증), Phase 5 선행 과제 필요. 2026-04-18 기준.
+description: Phase 1~5-1 완료. Phase 5-2(효과판정 개선)~5-4(스케줄 확정) 미착수. 2026-04-18 기준.
 type: project
-originSessionId: f32d44fe-befa-41f0-a807-485c5ff003ef
+originSessionId: c41dfa35-6a70-4e58-ac21-b97b9aa990fb
 ---
 **네이버검색광고 에이전트 빌드 — 전체 진행 현황** (2026-04-18 기준)
 
@@ -16,7 +16,10 @@ originSessionId: f32d44fe-befa-41f0-a807-485c5ff003ef
 | 3 | LLM 교차 검증 (Analyst→Strategist→Critic→Verifier) | ✅ 완료 | Phase3_완성본.json |
 | 3.5 | 리포트 고도화 (대시보드HTML, 상품명매핑, 캠페인집계) | ✅ 완료 | Phase3.5_완성본.json |
 | 4 | 승인→자동반영 (Webhook + 입찰가 변경 + 실행로그 기록) | ✅ **E2E 완결** | Phase4_완성본.json + Phase4_승인_자동반영.json |
-| 5 | 전체 가동 / 사후 ROAS 피드백 | ⬜ 미착수 | — |
+| 5-1 | 사후 ROAS 자동 측정 로직 | ✅ 완료 | Phase5_사후ROAS_자동측정.json (KvCkk3M3sNcegLgU) |
+| 5-2 | 효과 판정 고도화 | ⬜ 미착수 | — |
+| 5-3 | 실패 학습 루프 | ⬜ 미착수 | — |
+| 5-4 | 전체 가동 스케줄 확정 | ⬜ 미착수 | — |
 
 ## Phase 4 세부 상태 (2026-04-18 E2E 완결)
 - ✅ Webhook → 파라미터검증 → 네이버 API PUT → 05_실행로그 Append A~K 정상 기록
