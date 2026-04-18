@@ -64,3 +64,12 @@ originSessionId: c41dfa35-6a70-4e58-ac21-b97b9aa990fb
 4. 전체 가동 스케줄 확정 (일/주 주기)
 
 **How to apply:** Phase 5 직행 금지. 반드시 런북 Step 1~5 선행 → 선행 과제 4개 해결 여부 교차 확인 → 착수.
+
+**Phase 5-3 실패학습 루프 구조 완료** (2026-04-18)
+- KvCkk3M3sNcegLgU: 실패여부_확인(IF) + 실패패턴_기록(GSheets append) 노드 추가 (15노드)
+  → 효과='실패' or '악화' 시 06_실패패턴 시트에 자동 기록
+- UJrNqijTudgU91sX: 실패패턴_조회(GSheets read) + 실패패턴_집계(Code) + Strategist_프롬프트 수정 (59노드)
+  → Analyst_API → 실패패턴_조회 → 실패패턴_집계 → Strategist_프롬프트
+  → 억제만료일(30일) 이내 실패 이력을 Strategist 프롬프트에 주입
+- 06_실패패턴 시트: 헤더 추가 완료 (기록일/키워드/nccAdId/실패유형/변경전입찰가/변경후입찰가/변경전ROAS/변경후ROAS/억제만료일)
+- 남은 작업: Phase 5-4 스케줄 확정
