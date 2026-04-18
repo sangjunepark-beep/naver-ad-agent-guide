@@ -1,39 +1,58 @@
 ---
 name: 상품명 매핑 + 스마트스토어 링크 수정 이력
-description: 상품매핑_읽기 enable, 이름조인/데이터_합산 버그 수정, 리포트 링크 추가. 2026-04-18 완료.
+description: 상품매핑 D열 full URL 완성(2208개). pLink 코드 D열 직접 사용으로 최종 완료. 2026-04-19.
 type: project
 originSessionId: c41dfa35-6a70-4e58-ac21-b97b9aa990fb
 ---
-**상품명 매핑 수정 이력** (2026-04-18)
+**상품명 매핑 수정 이력** (2026-04-18~19 최종완료)
 
-## 문제 원인
-`상품매핑_읽기` 노드가 `disabled: true` + leaf node(출력 연결 없음) 상태.
-→ `$('상품매핑_읽기').all()`이 아무 데이터도 반환하지 않아 이름조인·데이터_합산 모두 nad-... ID fallback.
+## 최종 상태 (완료)
 
-## 수정 내역
+상품매핑 시트 D열에 스마트스토어 full URL 2208개 입력 완료.
+pLink 헬퍼가 D열 URL을 직접 사용하도록 수정 완료.
+테스트 이메일(jimrn22@gmail.com) INBOX 도착 확인.
 
-| 노드 | 수정 내용 |
+## 수정 이력 요약
+
+| 단계 | 수정 내용 |
 |------|----------|
-| `상품매핑_읽기` | disabled 제거(활성화) + range A:B → A:C (nvMid 컬럼 포함) |
-| `이름조인` | productMap에 nvMid 포함 `{ 상품명, nvMid }`, 출력에 nvMid 컬럼 추가 |
-| `데이터_합산` | `adId = r['상품명']` 버그 → `r['상품ID']` 수정. displayName=`r['상품명']` 우선 |
-| `리포트_생성` | nvMidMap 구축 + pLink 헬퍼 추가. 이상탐지/AI교차검증 상품명 클릭 링크화 |
+| 1차 (04-18) | `상품매핑_읽기` 활성화 + range A:D, pLink 코드 추가 |
+| 2차 (04-18) | nvMid 기반 URL → "상품이 존재하지 않습니다" 확인 → 근본 원인: nvMid ≠ smartstore productNo |
+| 3차 (04-18~19) | 스마트스토어 판매자센터 CSV 2개 업로드 → JOIN → D열 full URL 직접 저장 |
 
-## 링크 구조
-- URL: `https://smartstore.naver.com/hanasign/products/{nvMid}`
-- 스토어 ID: `hanasign` (hanasignmall 아님)
-- nvMid 소스: 상품매핑 시트 C열
+## 구글 시트 D열 현황
+- 스프레드시트 ID: `1Yuw_8we4nEzL1nslHI66LHBBE_uWc-ErALzhn2vvLGI`
+- 시트: 상품매핑 (gid=1248602534)
+- 범위: D2:D2209 (총 2208개)
+  - hanasign: `https://smartstore.naver.com/hanasign/products/{ss번호}` — 1899개
+  - thecorrectsign: `https://smartstore.naver.com/thecorrectsign/products/{ss번호}` — 238개
+  - 빈값: 71개 (CSV에 없는 상품)
 
-## 미완료: productNo 불일치
-- 현재 C열 nvMid = 네이버 광고 API의 nvMid (쇼핑 카탈로그 ID)
-- 스마트스토어 URL의 productNo와 다른 ID 체계
-- **해결 방법**: 스마트스토어 파트너센터 → 상품관리 → 엑셀 다운로드 → 상품번호 컬럼을 시트 D열에 추가
-- 소스 파일 없이는 정확한 매핑 불가
+## pLink 최종 코드 (`리포트_생성` 노드)
+```javascript
+const pUrlMap = {};
+try {
+  for (const item of $('상품매핑_읽기').all()) {
+    const m = item.json;
+    const adId = m['adId'] || m['소재ID'] || '';
+    const nm = m['상품명'] || '';
+    const pUrl = m['스마트스토어이상품번호'] || '';  // D열 = full URL
+    if (pUrl) {
+      if (adId) pUrlMap[adId] = pUrl;
+      if (nm) pUrlMap[nm] = pUrl;
+    }
+  }
+} catch(e) {}
+const pLink = (name, id) => {
+  const url = pUrlMap[id] || pUrlMap[name] || '';
+  if (!url) return name;
+  return '<a href="' + url + '" target="_blank" style="color:#1e40af;text-decoration:none;font-weight:700">' + name + '</a>';
+};
+```
 
-## 검증 결과 (실행 #145)
-- `상품매핑_읽기` executionTime: 1687ms (정상 실행)
-- 리포트 내 nad-... 개수: 0 (완전 제거)
-- 스마트스토어 링크 수: 18개 (이상탐지 + AI교차검증)
+## 임시 워크플로우 (정리 필요)
+- `XquBGKrgVVWVUTyN` (D열 업데이트용) — 삭제 예정
+- `1RFPrHhg7cpchpxg` (테스트 이메일 발송용) — 삭제 예정
 
-**Why:** 이상탐지·AI교차검증 섹션에서 상품명 대신 nad-... ID가 노출되어 식별 불가했음
-**How to apply:** productNo 소스 파일 확보 시 D열 추가 → 코드에서 nvMid 대신 D열 우선 사용
+**Why:** nvMid(광고API 카탈로그ID)와 스마트스토어 productNo가 다른 ID 체계 → CSV JOIN으로 해결
+**How to apply:** D열이 full URL이므로 pLink에서 바로 사용. nvMid 관련 코드 제거 가능
