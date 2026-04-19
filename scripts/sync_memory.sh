@@ -37,7 +37,7 @@ if [ -z "$LOCAL_DIR" ]; then
   exit 1
 fi
 
-# 관리 대상 파일 15개
+# 관리 대상 파일 (배열 크기로 자동 인식)
 FILES=(
   MEMORY.md
   feedback_decision_and_token_confirmation.md
@@ -55,6 +55,9 @@ FILES=(
   project_phase4_done.md
   reference_n8n_workflows.md
   project_home_pc_migration.md
+  reference_n8n_api_key.md
+  project_phase5_done.md
+  project_product_mapping_done.md
 )
 
 CMD="${1:-}"
@@ -171,7 +174,7 @@ check_status() {
     fi
   done
   echo "---"
-  echo "파일: $count / 15    총 $total_size bytes"
+  echo "파일: $count / ${#FILES[@]}    총 $total_size bytes"
 }
 
 # ----------------------------------------------------------------------------
@@ -184,7 +187,7 @@ case "$CMD" in
   *)
     cat <<EOF
 사용법:
-  bash sync_memory.sh pull              # GitHub → 로컬 (15개 덮어쓰기)
+  bash sync_memory.sh pull              # GitHub → 로컬 (관리 대상 전체 덮어쓰기)
   GH_TOKEN=ghp_xxx sync_memory.sh push  # 로컬 → GitHub (PAT 필수)
   bash sync_memory.sh check             # 로컬 파일 상태 점검
 
