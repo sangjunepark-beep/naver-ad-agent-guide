@@ -58,6 +58,10 @@ FILES=(
   reference_n8n_api_key.md
   project_phase5_done.md
   project_product_mapping_done.md
+  project_pipeline_recovery_20260420.md
+  project_revenue_zero_issue.md
+  project_report_redesign_pending.md
+  project_businessday_policy_correction.md
 )
 
 CMD="${1:-}"
