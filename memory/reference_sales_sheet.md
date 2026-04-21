@@ -6,13 +6,15 @@ originSessionId: 6d1b954e-cc6c-4309-8ced-effc48f4c987
 ---
 **Spreadsheet ID**: `169BTstGNSOPxx0aKglV2sTb_zhZWEfW1KTcht-K3afA`
 **기본 gid**: `1952467949`
+**실제 Sheet Tab 이름**: `업체계약현황` ★★ (n8n 캐시 "현황"은 오래된 값. Sheets API에는 "업체계약현황"으로 요청해야 함)
+**Sheet dimension**: rows=32687, cols=28 (확인 2026-04-21)
 **URL**: https://docs.google.com/spreadsheets/d/169BTstGNSOPxx0aKglV2sTb_zhZWEfW1KTcht-K3afA/edit?gid=1952467949
 
 ## ⛔ 쓰기 금지 (2026-04-20 사용자 지시)
 - n8n Google Sheets 노드는 **read/query만**, append/update/delete 절대 금지
 - 수식 수정, 포맷 변경, 컬럼 추가 모두 금지
 
-## 시트 구조 (20 컬럼, 약 25,281행 · 누적)
+## 시트 구조 (20 컬럼, 약 32,687행 · 누적)
 | 컬럼 | 의미 |
 |---|---|
 | 년 / 월 / 일 | **진행건 기준 입력일** (날짜 집계 기준으로 이거 사용) |
@@ -24,7 +26,7 @@ originSessionId: 6d1b954e-cc6c-4309-8ced-effc48f4c987
 | 담당 | 제작 담당자 |
 | 제목/상호 | 고객명 |
 | 품명 | 제품 |
-| **총 금액** | **주문 금액 (합산 대상)** ★ |
+| **총 금액** | **주문 금액 (합산 대상)** ★ Q열 (col index 16) |
 
 ## 진행자 값 → 채널 매핑 (2026-04-20 사용자 확정)
 
@@ -41,16 +43,18 @@ originSessionId: 6d1b954e-cc6c-4309-8ced-effc48f4c987
 
 - 날짜 기준은 `년/월/일` (시스템 입력일 = 진행건 기준)
 - **네이버 검색광고 ROAS 계산에 직접 반영**되는 것은 **02_전환수집로그(광고 경유 결제)만**
-- 매출 시트의 "스마트스토어" 진행자 매출에는 **광고 + 자연(브랜드 검색/SEO) 혼재** — 광고-자연 분리는 02 로그와 차집합으로 추정 가능
 
 ## 리포트 연결 규칙
 - **실 ROAS** = (온라인 스마트스토어 매출 + CS 매출) ÷ 광고비
 - **영업 매출(영호)** = 리포트에 참조용 별도 섹션으로 표시, ROAS 계산 미포함
-- **추후 영업사원 추가 시 사용자가 알려줘야 함** (현재는 영호 1인)
 
-## n8n 연결 방식
-- 기존 Google Sheets credential `HjfwX5DgD4iXkptZ` ("Google Sheets - 하나사인몰") 재사용 가능 확인됨 (2026-04-20 테스트 OK, execution #166)
-- 전체 시트 read 후 JS에서 날짜·진행자 필터링 권장 (25K행이라 ~2~3초 추가 소요)
-- operation은 반드시 `read` 고정, documentId/gid 하드코딩
+## n8n 연결 방식 (2026-04-21 확정)
+- **httpRequest 노드 + Sheets API batchGet** 사용 (googleSheets 노드는 25K rows에서 OOM)
+- URL: `https://sheets.googleapis.com/v4/spreadsheets/{id}/values:batchGet`
+- ranges: `업체계약현황!A1:Q2000` (최근 2000행만, 최신→오래 순)
+- valueRenderOption: `UNFORMATTED_VALUE`
+- credential: `googleSheetsOAuth2Api` (id=HjfwX5DgD4iXkptZ, "Google Sheets - 하나사인몰")
+- **executeOnce: true** 필수 (upstream item 수만큼 반복 호출 방지, quota 초과 방지)
 
-**Why**: 하나사인몰 실제 매출 구조상 CS 경유 주문이 스마트스토어 결제보다 클 때가 많음. 온라인 ROAS만 보면 광고 성과 저평가됨. 실 ROAS(CS 포함)가 대표 판단에 더 정확.
+**Why**: 하나사인몰 실제 매출 구조상 CS 경유 주문이 스마트스토어 결제보다 클 때가 많음. 실 ROAS(CS 포함)가 대표 판단에 더 정확.
+**How to apply**: n8n에서 매출시트_조회 httpRequest 노드 수정 시 **반드시 Sheet 이름 "업체계약현황"**으로, executeOnce 유지, range를 2000행으로 제한.
