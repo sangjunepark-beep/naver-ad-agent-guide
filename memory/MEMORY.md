@@ -20,3 +20,11 @@
 - [매출 0원 / ROAS 0% 리포트 이슈](project_revenue_zero_issue.md) — 04-20 리포트 복구 후 전 캠페인 매출 0원. 전환 JOIN·참조 경로 진단 필요
 - [리포트 메일 개편 요구사항](project_report_redesign_pending.md) — 제목/네이버로고/이상탐지상세/AI교차검증상세/이슈맥락 5대 요구. A/B안 및 레벨 결정 대기
 - [영업일 스케줄 정책 정정](project_businessday_policy_correction.md) — 파이프라인은 매일 가동, 메일만 영업일. 현재 구현 gap 30~40분 수정 필요
+- [CS/영업 매출 시트 (읽기 전용)](reference_sales_sheet.md) — 진행자 "영호"=영업매출(광고 무관), 그 외=CS매출(ROAS 포함). 년/월/일 기준
+- [하나사인몰 일별 매출 기준값](project_hanasignmall_daily_baseline.md) — 평일 CS 800~900만/온라인 280~350만. 80% 기준치 부적절, 요일별 차등 판정 필요
+- [리포트 개편 v10 스냅샷](project_report_redesign_v10_snapshot.md) — 샘플 디자인 완료(04-17 평일). n8n 2단계 실연동 대기. GitHub Pages hanasignmall-ad-reports
+- [리포트 날짜 포맷 + 로켓URL 채움](project_report_date_format_and_rocket_urls.md) — 04-20 제목/헤더에 요일+'어제 집계분'. 로켓출력공장 17개 D열 URL 채움
+- [리포트 v11 — 04-21 실행 완료 (일부 이슈)](project_report_redesign_v11_inprogress.md) — 메일·Pages 도달. 매출 0원(OOM 비활성화) + 샘플 하드코딩값 잔존 + AI 4단계 "데이터 부재". v12 이관
+- [광고매체 통합 수집 — 04-21 문서 2건 완료](project_ad_multi_channel_pending.md) — Google Ads MCC 가이드 + 쿠팡/ESM 문의 템플릿 작성. 네이버 B계정 자격증명 대기
+- [04-21 매출 OOM + v12 재정비 계획](project_20260421_sales_oom_and_v12_plan.md) — v1~v11 OOM 여정 + 내일 v12 우선순위(Verifier_L1 복구, 하드코딩 제거, 영업 섹션 수정)
+- [v12 리포트 전면 재정비 완료](project_v12_complete.md) — 2026-04-21 저녁. v12-1~9 (AI 파싱·매출시트 batchGet·상품링크·광고그룹 딥링크·용어 한글화). sheet tab "업체계약현황", Q→R열, executeOnce 필수
