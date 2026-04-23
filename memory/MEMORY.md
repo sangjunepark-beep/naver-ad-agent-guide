@@ -27,4 +27,6 @@
 - [리포트 v11 — 04-21 실행 완료 (일부 이슈)](project_report_redesign_v11_inprogress.md) — 메일·Pages 도달. 매출 0원(OOM 비활성화) + 샘플 하드코딩값 잔존 + AI 4단계 "데이터 부재". v12 이관
 - [광고매체 통합 수집 — 04-21 문서 2건 완료](project_ad_multi_channel_pending.md) — Google Ads MCC 가이드 + 쿠팡/ESM 문의 템플릿 작성. 네이버 B계정 자격증명 대기
 - [04-21 매출 OOM + v12 재정비 계획](project_20260421_sales_oom_and_v12_plan.md) — v1~v11 OOM 여정 + 내일 v12 우선순위(Verifier_L1 복구, 하드코딩 제거, 영업 섹션 수정)
-- [v12 리포트 전면 재정비 완료](project_v12_complete.md) — 2026-04-21. v12-1~11 (AI·매출·한글화·요일버그 v12-10·광고그룹 딥링크 캠페인 무시 v12-11). 이름조인 return에 캠페인ID/광고그룹ID 보존, grpByProd[상품ID] 매핑
+- [v12 리포트 재정비 완결 (v12-1~22)](project_v12_complete.md) — 4-21~4-23. v12-17~22: ADVoost 연동·탭 UI·금액중심 Hero·폰트+20%·광고비 일치·입찰가 절대값 제안
+- [04-23 ADVoost + B계정 + 탭 UI 통합 작업](project_20260423_advoost_bacc_tab_ui.md) — 세션 이어갈 포인트 목록. 우선순위 A=B계정 실데이터 수집 연결, B=Conv 복제, C=스케줄 09:30, D=UI 개선, E=날짜 불일치 조사. B계정 키 로테이션 권장
+- [네이버 검색광고 A/B 계정 참조](reference_naver_ad_accounts.md) — A=1872088 스마트스토어 / B=1558945 자사몰. 자격증명은 n8n 변수_설정에만 저장. B계정 노드 `_B` 접미사 규칙
