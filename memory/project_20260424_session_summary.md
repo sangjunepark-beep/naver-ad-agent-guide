@@ -1,10 +1,10 @@
 ---
-name: 2026-04-24 세션 종합 — 날짜 버그·채널 분류·일자 보정·허수 검증
-description: 하루 만에 n8n 파이프라인의 5개 날짜 버그, 채널 분류(영호/하나몰) 버그, 일자 오타 자동 보정 추가. 네이버 광고 매출 부풀림은 공식문서·실데이터 대조 후 1.3~1.9배(중복 아님). Claude in Chrome 유령 다운로드 원인 특정
+name: 2026-04-24 세션 종합 — 날짜 버그·채널 분류·일자 보정·허수 검증·스마트스토어 탭 재설계
+description: 하루 만에 n8n 파이프라인 버그 연쇄 수정 + 스마트스토어 탭 3스토어 분리 UI 재설계. 총 5회 PUT. 네이버 광고 매출 부풀림 1.3~1.9배(중복 아님). Claude in Chrome 유령 다운로드 원인 특정
 type: project
 originSessionId: 35d08f6a-12fd-40ba-9cd3-904848f3b709
 ---
-**사실**: 2026-04-24 세션에서 n8n 워크플로우 `UJrNqijTudgU91sX`(네이버 검색광고 에이전트_파이프라인)에 총 **3회 PUT** 수행:
+**사실**: 2026-04-24 세션에서 n8n 워크플로우 `UJrNqijTudgU91sX`(네이버 검색광고 에이전트_파이프라인)에 총 **5회 PUT** 수행:
 
 1. **5개 노드 KST 날짜 버그 패치** (PUT 06:30 UTC)
    - 서명_생성_stats_POST / 서명_생성_conv_POST / 서명_생성_stats_POST_B: UTC `new Date()` → `Date.now() + 9h` 보정
@@ -15,8 +15,25 @@ originSessionId: 35d08f6a-12fd-40ba-9cd3-904848f3b709
 3. **일자 보정 로직 추가** (PUT 07:02 UTC)
    - 이웃 ±2행 중 3개 이상이 동일 일자인데 현재 행만 다르면 → 주변 일자로 보정
    - 전체 시트 기준 18건 오타 발견(2028-03-31 같은 타이포 포함). 04-23 CS 집계 결과 보정 후 22건/6,033,460원 (보정 전 21건/5,804,460원)
+4. **스마트스토어 탭 v13 재설계** (PUT 08:12 UTC)
+   - 리포트_생성 jsCode 55,798자 → 62,304자 확장
+   - 3스토어 분리 섹션: 🏠 하나사인몰 / ⚠️ 더바른사인 / 🚀 로켓출력공장 (좌측 색상 바 파랑/주황/보라)
+   - 각 섹션 KPI 6카드 (광고비/노출/클릭/전환/매출/ROAS) + 전환 상품 전체 매출순 + 비전환 광고비 TOP 10
+   - 스토어 분류 함수: `classifyStore(cmp)` — includes('로켓'/'더바른'/'하나몰')
+   - 새 placeholder 10개, 데이터 계산 로직 추가, HTML 템플릿 교체, 치환 map 등록
+5. **필드명 + 채널 뱃지 5건 수정** (PUT 08:26 UTC)
+   - 스마트스토어 v13 필드명 버그: `Number(p.구매전환수)` → `Number(p.전환수_구매)` (데이터_합산 output 실제 필드명)
+   - 요약 탭 chanRow 채널 뱃지 4개 교체:
+     - 자사몰(hanasignmall.com) '광고 무관' → 'B계정 연동중'
+     - 자사몰(hanasignmall.kr) '광고 무관' → 'Google Ads 연동예정'
+     - 쿠팡 '광고 무관' → '쿠팡 애드 연동예정'
+     - G마켓 '광고 무관' → 'ESM 연동예정'
 
 또한 **OOM 방지 settings 변경**: `saveExecutionProgress=false, saveManualExecutions=false, saveDataSuccessExecution=none`. 수동 실행 시 중간 데이터 미저장으로 메모리 확보. 실행 자체는 정상(메일·GitHub Pages 액션 수행).
+
+**채널 ↔ 광고매체 매핑 확정**: 스마트스토어=네이버 A계정(1872088), 자사몰.com=네이버 B계정(1558945), 자사몰.kr=Google Ads, 쿠팡=쿠팡 애드, G마켓/옥션=ESM. 네이버 A외 전부 연동 예정. 상세: `reference_channel_ad_source_mapping.md`
+
+**Conv API 상품별 기여매출 추출 가능 (중요)**: Conv TSV raw에 광고소재ID(nad-...), 상품ID, 매출 등 전부 있음. 상품매핑 or 이름조인 노드로 상품명 연결. 04-23 13건 1,087,500원 완전 분해 확인(약국 유리문, 아파트게시판 슬림8구 등).
 
 **네이버 광고 매출 부풀림 재검증**: 공식문서 교차조사 + exec224 원본 Conv TSV 분석 결과:
 - Conv API는 `convType`으로 purchase/add_to_cart 명확 분리 (04-23 purchase 13건 1,087,500원 / cart 22건 3,439,910원)
