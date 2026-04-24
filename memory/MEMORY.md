@@ -37,3 +37,4 @@
 - [Claude in Chrome 유령 다운로드 원인](project_claude_chrome_ghost_downloads.md) — 사무실 PC 크로스 디바이스 세션이 현재 PC 브라우저 제어. 크롬 로그아웃+세션 삭제로 차단
 - [네이버 광고 매출 부풀림 재검증 (04-24 정정)](project_naver_ad_inflation_revised_20260424.md) — 04-14 "5배" 과장. 실제 1.3~1.9배. Conv API는 purchase/cart 명확 분리. 중복 아님
 - [채널 ↔ 광고매체 매핑](reference_channel_ad_source_mapping.md) — 스마트스토어=네이버A, 자사몰.com=네이버B, 자사몰.kr=구글애즈, 쿠팡=쿠팡애드, G마켓/옥션=ESM
+- [스마트스토어 탭 v13 재설계 (3스토어 분리)](project_20260424_smartstore_tab_v13.md) — 하나사인몰/더바른사인/로켓출력공장 섹션 분리. 전환 상품 전체+비전환 광고비 TOP10. 04-24 PUT 완료
