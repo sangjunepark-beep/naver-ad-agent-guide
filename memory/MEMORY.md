@@ -30,3 +30,9 @@
 - [v12 리포트 재정비 완결 (v12-1~22)](project_v12_complete.md) — 4-21~4-23. v12-17~22: ADVoost 연동·탭 UI·금액중심 Hero·폰트+20%·광고비 일치·입찰가 절대값 제안
 - [04-23 ADVoost + B계정 + 탭 UI 통합 작업](project_20260423_advoost_bacc_tab_ui.md) — 세션 이어갈 포인트 목록. 우선순위 A=B계정 실데이터 수집 연결, B=Conv 복제, C=스케줄 09:30, D=UI 개선, E=날짜 불일치 조사. B계정 키 로테이션 권장
 - [네이버 검색광고 A/B 계정 참조](reference_naver_ad_accounts.md) — A=1872088 스마트스토어 / B=1558945 자사몰. 자격증명은 n8n 변수_설정에만 저장. B계정 노드 `_B` 접미사 규칙
+- [2026-04-24 세션 종합](project_20260424_session_summary.md) — 5개 노드 KST 날짜버그·채널분류 영호/하나몰 버그·일자오타 자동보정 추가. n8n PUT 3회
+- [채널별_집계 mapChannel 분류 규칙 (확정)](project_channel_classification_rules.md) — `(영호)` includes = 영업, 사인몰·하나몰 startsWith = CS. 기타는 '기타'로
+- [채널별_집계 일자 오타 자동 보정](project_date_correction_logic.md) — 이웃 ±2행 중 3개 이상 동일 일자면 그 일자로 보정. 04-23 22건/6,033,460원
+- [n8n 수동실행 OOM 방지 settings](feedback_oom_prevention_settings.md) — saveManualExecutions/saveDataSuccessExecution off. 메일·GitHub 액션은 정상
+- [Claude in Chrome 유령 다운로드 원인](project_claude_chrome_ghost_downloads.md) — 사무실 PC 크로스 디바이스 세션이 현재 PC 브라우저 제어. 크롬 로그아웃+세션 삭제로 차단
+- [네이버 광고 매출 부풀림 재검증 (04-24 정정)](project_naver_ad_inflation_revised_20260424.md) — 04-14 "5배" 과장. 실제 1.3~1.9배. Conv API는 purchase/cart 명확 분리. 중복 아님
